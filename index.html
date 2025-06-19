@@ -5,88 +5,421 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>VerfMuur Registratie</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .tab-button {
+      transition: all 0.3s ease;
+    }
+    .tab-button.active {
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+    }
+    .form-container {
+      background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+      border: 1px solid #e2e8f0;
+    }
+    .preview-image {
+      max-width: 150px;
+      max-height: 150px;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 2px solid #e2e8f0;
+    }
+    .card-hover {
+      transition: all 0.3s ease;
+    }
+    .card-hover:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+    .loading-spinner {
+      border-top-color: #3498db;
+      animation: spin 1s ease-in-out infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
 </head>
-<body class="bg-gray-100 p-4">
-  <div class="max-w-xl mx-auto bg-white p-6 rounded-2xl shadow-lg">
-    <h1 class="text-2xl font-bold mb-4">🎨 VerfMuur Registratie</h1>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen p-4">
+  <div class="max-w-6xl mx-auto">
+    <!-- Tab Navigation -->
+    <div class="flex mb-6 bg-white rounded-xl p-2 shadow-sm">
+      <button id="tab-register" class="tab-button flex-1 py-3 px-6 rounded-lg font-medium active">
+        🎨 Nieuwe Verf Registreren
+      </button>
+      <button id="tab-overview" class="tab-button flex-1 py-3 px-6 rounded-lg font-medium">
+        📋 Overzicht Bekijken
+      </button>
+    </div>
 
-    <form id="verfForm" class="space-y-4">
-      <input type="text" name="locatie" placeholder="Locatie (bv. woonkamer links)" required class="w-full border p-2 rounded" />
-      <input type="text" name="merk" placeholder="Merk verf (bv. Flexa)" class="w-full border p-2 rounded" />
-      <input type="text" name="kleurcode" placeholder="Kleurcode (bv. RAL 9010)" class="w-full border p-2 rounded" />
-      <input type="text" name="type" placeholder="Type (mat, zijdeglans...)" class="w-full border p-2 rounded" />
-      <input type="date" name="gekocht" class="w-full border p-2 rounded" />
-      <textarea name="opmerkingen" placeholder="Opmerkingen" rows="2" class="w-full border p-2 rounded"></textarea>
+    <!-- Register Tab -->
+    <div id="register-tab" class="tab-content">
+      <div class="max-w-xl mx-auto bg-white p-8 rounded-2xl shadow-xl form-container">
+        <h1 class="text-3xl font-bold mb-6 text-gray-800">🎨 VerfMuur Registratie</h1>
 
-      <div>
-        <label class="block font-medium mb-1">📷 Foto van de muur</label>
-        <input type="file" accept="image/*" id="muurfoto" required class="w-full" />
+        <form id="verfForm" class="space-y-5">
+          <div>
+            <label class="block font-medium mb-2 text-gray-700">📍 Locatie *</label>
+            <input type="text" name="locatie" placeholder="bv. woonkamer links" required 
+                   class="w-full border-2 border-gray-200 p-3 rounded-lg focus:border-blue-500 focus:outline-none transition-colors" />
+          </div>
+          
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block font-medium mb-2 text-gray-700">🏷️ Merk</label>
+              <input type="text" name="merk" placeholder="bv. Flexa" 
+                     class="w-full border-2 border-gray-200 p-3 rounded-lg focus:border-blue-500 focus:outline-none transition-colors" />
+            </div>
+            <div>
+              <label class="block font-medium mb-2 text-gray-700">🎨 Kleurcode</label>
+              <input type="text" name="kleurcode" placeholder="bv. RAL 9010" 
+                     class="w-full border-2 border-gray-200 p-3 rounded-lg focus:border-blue-500 focus:outline-none transition-colors" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block font-medium mb-2 text-gray-700">✨ Type</label>
+              <select name="type" class="w-full border-2 border-gray-200 p-3 rounded-lg focus:border-blue-500 focus:outline-none transition-colors">
+                <option value="">Selecteer type</option>
+                <option value="Mat">Mat</option>
+                <option value="Zijdeglans">Zijdeglans</option>
+                <option value="Hoogglans">Hoogglans</option>
+                <option value="Satijn">Satijn</option>
+              </select>
+            </div>
+            <div>
+              <label class="block font-medium mb-2 text-gray-700">📅 Gekocht op</label>
+              <input type="date" name="gekocht" 
+                     class="w-full border-2 border-gray-200 p-3 rounded-lg focus:border-blue-500 focus:outline-none transition-colors" />
+            </div>
+          </div>
+
+          <div>
+            <label class="block font-medium mb-2 text-gray-700">📝 Opmerkingen</label>
+            <textarea name="opmerkingen" placeholder="Extra notities..." rows="3" 
+                      class="w-full border-2 border-gray-200 p-3 rounded-lg focus:border-blue-500 focus:outline-none transition-colors resize-none"></textarea>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block font-medium mb-2 text-gray-700">📷 Foto van de muur *</label>
+              <input type="file" accept="image/*" id="muurfoto" required 
+                     class="w-full border-2 border-gray-200 p-3 rounded-lg focus:border-blue-500 focus:outline-none file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
+              <div id="muur-preview" class="mt-3"></div>
+            </div>
+            <div>
+              <label class="block font-medium mb-2 text-gray-700">📦 Foto van het verfblik *</label>
+              <input type="file" accept="image/*" id="verfblikfoto" required 
+                     class="w-full border-2 border-gray-200 p-3 rounded-lg focus:border-blue-500 focus:outline-none file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
+              <div id="blik-preview" class="mt-3"></div>
+            </div>
+          </div>
+
+          <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-4 px-6 rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 transform hover:scale-105 font-semibold text-lg shadow-lg">
+            💾 Verf Opslaan
+          </button>
+          
+          <div id="status" class="text-center text-sm mt-4 p-3 rounded-lg"></div>
+        </form>
       </div>
-      <div>
-        <label class="block font-medium mb-1">📦 Foto van het verfblik</label>
-        <input type="file" accept="image/*" id="verfblikfoto" required class="w-full" />
+    </div>
+
+    <!-- Overview Tab -->
+    <div id="overview-tab" class="tab-content hidden">
+      <div class="bg-white rounded-2xl shadow-xl p-8">
+        <div class="flex justify-between items-center mb-6">
+          <h1 class="text-3xl font-bold text-gray-800">📋 VerfMuren Overzicht</h1>
+          <button id="refresh-btn" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+            🔄 Vernieuwen
+          </button>
+        </div>
+        
+        <div id="loading" class="text-center py-8">
+          <div class="inline-block w-8 h-8 border-4 border-blue-200 border-t-blue-600 rounded-full loading-spinner"></div>
+          <p class="mt-2 text-gray-600">Gegevens laden...</p>
+        </div>
+        
+        <div id="lijst" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 hidden"></div>
+        <div id="no-data" class="text-center py-8 hidden">
+          <div class="text-6xl mb-4">🎨</div>
+          <p class="text-gray-500 text-lg">Nog geen verfgegevens geregistreerd.</p>
+          <p class="text-gray-400 text-sm mt-2">Klik op "Nieuwe Verf Registreren" om te beginnen!</p>
+        </div>
+        <div id="error-message" class="text-center py-8 hidden">
+          <div class="text-6xl mb-4">⚠️</div>
+          <p class="text-red-500 text-lg">Fout bij laden van gegevens</p>
+          <p class="text-gray-400 text-sm mt-2">Controleer je internetverbinding en probeer opnieuw.</p>
+        </div>
       </div>
-
-      <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Opslaan</button>
-      <p id="status" class="text-sm mt-2 text-gray-600"></p>
-    </form>
-
-    <a href="overzicht.html" class="mt-6 inline-block text-blue-600 hover:underline">📋 Overzicht bekijken</a>
+    </div>
   </div>
 
   <script>
+    // BELANGRIJK: Vervang deze URL met je eigen Google Apps Script URL
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwPAMcJA0CPcgzYXHbWXdmNg-2rCYfDOoLENQNTvQiDu_QrVau8uf9WDZUmJM97VtFg/exec";
+    
+    // Tab functionality
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        const targetTab = button.id.replace('tab-', '') + '-tab';
+        
+        // Update active states
+        tabButtons.forEach(btn => btn.classList.remove('active'));
+        button.classList.add('active');
+        
+        // Show/hide content
+        tabContents.forEach(content => content.classList.add('hidden'));
+        document.getElementById(targetTab).classList.remove('hidden');
+        
+        // Load data when switching to overview
+        if (targetTab === 'overview-tab') {
+          loadOverview();
+        }
+      });
+    });
+
+    // Refresh button
+    document.getElementById('refresh-btn').addEventListener('click', loadOverview);
+
+    // Image preview functionality
+    function setupImagePreview(inputId, previewId) {
+      const input = document.getElementById(inputId);
+      const preview = document.getElementById(previewId);
+      
+      input.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            preview.innerHTML = `<img src="${e.target.result}" class="preview-image" alt="Preview">`;
+          };
+          reader.readAsDataURL(file);
+        } else {
+          preview.innerHTML = '';
+        }
+      });
+    }
+
+    setupImagePreview('muurfoto', 'muur-preview');
+    setupImagePreview('verfblikfoto', 'blik-preview');
+
+    // Form submission
     const form = document.getElementById('verfForm');
     const status = document.getElementById('status');
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      status.textContent = "Bezig met uploaden...";
-
-      const muurfile = document.getElementById('muurfoto').files[0];
-      const blikfile = document.getElementById('verfblikfoto').files[0];
-
-      const toBase64 = file => new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsArrayBuffer(file);
-        reader.onload = () => resolve(btoa(
-          new Uint8Array(reader.result)
-            .reduce((data, byte) => data + String.fromCharCode(byte), '')
-        ));
-        reader.onerror = error => reject(error);
-      });
-
-      const muurfoto = await toBase64(muurfile);
-      const verfblikfoto = await toBase64(blikfile);
-
-      const formData = {
-        locatie: form.locatie.value,
-        merk: form.merk.value,
-        kleurcode: form.kleurcode.value,
-        type: form.type.value,
-        gekocht: form.gekocht.value,
-        opmerkingen: form.opmerkingen.value,
-        muurfoto,
-        verfblikfoto
-      };
+      showStatus("Bezig met uploaden...", "info");
 
       try {
-        const res = await fetch("https://script.google.com/macros/s/AKfycby7X8yQ2QnATestScriptOK1234567890abcdef/exec", {
-          method: "POST",
-          body: JSON.stringify(formData),
-          headers: { "Content-Type": "application/json" }
-        });
+        const formData = new FormData(form);
+        const muurFile = document.getElementById('muurfoto').files[0];
+        const blikFile = document.getElementById('verfblikfoto').files[0];
 
-        const text = await res.text();
-        if (text.includes("OK")) {
-          status.textContent = "✅ Verf opgeslagen!";
+        // Compress and convert images
+        const muurPhoto = await compressImage(muurFile);
+        const blikPhoto = await compressImage(blikFile);
+
+        const data = {
+          locatie: formData.get('locatie'),
+          merk: formData.get('merk') || 'Onbekend',
+          kleurcode: formData.get('kleurcode') || '',
+          type: formData.get('type') || '',
+          gekocht: formData.get('gekocht') || '',
+          opmerkingen: formData.get('opmerkingen') || '',
+          muurfoto: muurPhoto,
+          verfblikfoto: blikPhoto
+        };
+
+        const success = await submitToGoogleScript(data);
+        
+        if (success) {
+          showStatus("✅ Verf succesvol opgeslagen!", "success");
           form.reset();
+          document.getElementById('muur-preview').innerHTML = '';
+          document.getElementById('blik-preview').innerHTML = '';
         } else {
-          status.textContent = "❌ Fout bij opslaan: " + text;
+          showStatus("❌ Fout bij opslaan. Controleer je Google Apps Script configuratie.", "error");
         }
+
       } catch (err) {
-        status.textContent = "❌ Netwerkfout: " + err;
+        console.error('Error:', err);
+        showStatus("❌ Fout bij opslaan: " + err.message, "error");
       }
     });
+
+    async function compressImage(file, maxWidth = 800, quality = 0.7) {
+      return new Promise((resolve) => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
+        
+        img.onload = () => {
+          const ratio = Math.min(maxWidth / img.width, maxWidth / img.height);
+          canvas.width = img.width * ratio;
+          canvas.height = img.height * ratio;
+          
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+        
+        img.src = URL.createObjectURL(file);
+      });
+    }
+
+    async function submitToGoogleScript(data) {
+      if (GOOGLE_SCRIPT_URL === "PLAK_HIER_JE_GOOGLE_APPS_SCRIPT_URL") {
+        showStatus("⚠️ Google Apps Script URL niet geconfigureerd!", "warning");
+        return false;
+      }
+
+      try {
+        const response = await fetch(GOOGLE_SCRIPT_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+        
+        return response.ok;
+      } catch (error) {
+        console.error('Google Apps Script submission failed:', error);
+        return false;
+      }
+    }
+
+    async function loadOverview() {
+      const loading = document.getElementById('loading');
+      const lijst = document.getElementById('lijst');
+      const noData = document.getElementById('no-data');
+      const errorMessage = document.getElementById('error-message');
+
+      // Reset view
+      [lijst, noData, errorMessage].forEach(el => el.classList.add('hidden'));
+      loading.classList.remove('hidden');
+
+      if (GOOGLE_SCRIPT_URL === "PLAK_HIER_JE_GOOGLE_APPS_SCRIPT_URL") {
+        loading.classList.add('hidden');
+        errorMessage.classList.remove('hidden');
+        document.querySelector('#error-message p:first-of-type').textContent = 'Google Apps Script niet geconfigureerd';
+        document.querySelector('#error-message p:last-of-type').textContent = 'Vervang GOOGLE_SCRIPT_URL in de code met je werkelijke URL.';
+        return;
+      }
+
+      try {
+        const response = await fetch(GOOGLE_SCRIPT_URL + '?action=get');
+        const result = await response.json();
+        
+        loading.classList.add('hidden');
+        
+        if (result.status === 'OK' && result.data && result.data.length > 0) {
+          renderOverview(result.data);
+          lijst.classList.remove('hidden');
+        } else {
+          noData.classList.remove('hidden');
+        }
+      } catch (error) {
+        console.error('Error loading data:', error);
+        loading.classList.add('hidden');
+        errorMessage.classList.remove('hidden');
+      }
+    }
+
+    function renderOverview(data) {
+      const lijst = document.getElementById('lijst');
+      lijst.innerHTML = '';
+
+      // Sort by timestamp (newest first)
+      data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+      data.forEach((item, index) => {
+        const card = document.createElement('div');
+        card.className = 'bg-white p-6 rounded-xl shadow-lg card-hover border border-gray-100';
+        
+        const timestamp = item.timestamp ? new Date(item.timestamp).toLocaleString('nl-NL') : 'Onbekend';
+        
+        card.innerHTML = `
+          <div class="flex justify-between items-start mb-3">
+            <h3 class="text-lg font-bold text-gray-800">${item.locatie || 'Onbekende locatie'}</h3>
+            <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">${timestamp}</span>
+          </div>
+          
+          <div class="space-y-2 mb-4">
+            ${item.merk ? `<p class="text-sm"><span class="font-medium">Merk:</span> ${item.merk}</p>` : ''}
+            ${item.kleurcode ? `<p class="text-sm"><span class="font-medium">Kleur:</span> ${item.kleurcode}</p>` : ''}
+            ${item.type ? `<p class="text-sm"><span class="font-medium">Type:</span> ${item.type}</p>` : ''}
+            ${item.gekocht ? `<p class="text-sm"><span class="font-medium">Gekocht:</span> ${item.gekocht}</p>` : ''}
+            ${item.opmerkingen ? `<p class="text-sm"><span class="font-medium">Opmerkingen:</span> ${item.opmerkingen}</p>` : ''}
+          </div>
+          
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <p class="text-xs font-medium text-gray-600 mb-1">Muur</p>
+              ${item.muurfoto ? 
+                `<img src="${item.muurfoto}" alt="Muur" class="w-full h-24 object-cover rounded-lg border cursor-pointer" onclick="openImageModal('${item.muurfoto}', 'Muur - ${item.locatie}')">` :
+                `<div class="w-full h-24 bg-gray-100 rounded-lg border flex items-center justify-center text-gray-400 text-xs">Geen foto</div>`
+              }
+            </div>
+            <div>
+              <p class="text-xs font-medium text-gray-600 mb-1">Verfblik</p>
+              ${item.verfblikfoto ? 
+                `<img src="${item.verfblikfoto}" alt="Verfblik" class="w-full h-24 object-cover rounded-lg border cursor-pointer" onclick="openImageModal('${item.verfblikfoto}', 'Verfblik - ${item.locatie}')">` :
+                `<div class="w-full h-24 bg-gray-100 rounded-lg border flex items-center justify-center text-gray-400 text-xs">Geen foto</div>`
+              }
+            </div>
+          </div>
+        `;
+        
+        lijst.appendChild(card);
+      });
+    }
+
+    function openImageModal(src, title) {
+      const modal = document.createElement('div');
+      modal.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4';
+      modal.onclick = () => modal.remove();
+      
+      modal.innerHTML = `
+        <div class="max-w-4xl max-h-full">
+          <div class="bg-white p-4 rounded-lg mb-4">
+            <h3 class="text-lg font-semibold">${title}</h3>
+          </div>
+          <img src="${src}" alt="${title}" class="max-w-full max-h-full object-contain rounded-lg">
+          <p class="text-white text-center mt-4 text-sm">Klik om te sluiten</p>
+        </div>
+      `;
+      
+      document.body.appendChild(modal);
+    }
+
+    function showStatus(message, type) {
+      status.className = `text-center text-sm mt-4 p-3 rounded-lg ${getStatusClass(type)}`;
+      status.textContent = message;
+      
+      if (type === 'success') {
+        setTimeout(() => {
+          status.textContent = '';
+          status.className = 'text-center text-sm mt-4 p-3 rounded-lg';
+        }, 3000);
+      }
+    }
+
+    function getStatusClass(type) {
+      switch(type) {
+        case 'success': return 'bg-green-100 text-green-800 border border-green-200';
+        case 'error': return 'bg-red-100 text-red-800 border border-red-200';
+        case 'warning': return 'bg-yellow-100 text-yellow-800 border border-yellow-200';
+        case 'info': return 'bg-blue-100 text-blue-800 border border-blue-200';
+        default: return 'bg-gray-100 text-gray-800 border border-gray-200';
+      }
+    }
   </script>
 </body>
 </html>
