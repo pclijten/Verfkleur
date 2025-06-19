@@ -70,7 +70,7 @@
       };
 
       try {
-        const res = await fetch('https://script.google.com/macros/s/AKfycbwPAMcJA0CPcgzYXHbWXdmNg-2rCYfDOoLENQNTvQiDu_QrVau8uf9WDZUmJM97VtFg/exec', {
+        const res = await fetch('/api/proxy', {
           method: "POST",
           body: JSON.stringify(formData),
           headers: { "Content-Type": "application/json" }
