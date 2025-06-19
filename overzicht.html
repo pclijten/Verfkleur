@@ -25,7 +25,7 @@
       const json = JSON.parse(text.substring(47).slice(0, -2));
       const rows = json.table.rows;
 
-      rows.reverse().forEach(r => {
+     rows.slice(1).reverse().forEach(r => {
         const [
           tijd, locatie, merk, kleur, type, gekocht, opmerkingen, muur, blik
         ] = r.c.map(c => c?.v || "");
