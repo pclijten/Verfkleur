@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>VerfMuur Registratie</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-4">
+  <div class="max-w-xl mx-auto bg-white p-6 rounded-2xl shadow-lg">
+    <h1 class="text-2xl font-bold mb-4">🎨 VerfMuur Registratie</h1>
+
+    <form id="verfForm" class="space-y-4">
+      <input type="text" name="locatie" placeholder="Locatie (bv. woonkamer links)" required class="w-full border p-2 rounded" />
+      <input type="text" name="merk" placeholder="Merk verf (bv. Flexa)" class="w-full border p-2 rounded" />
+      <input type="text" name="kleurcode" placeholder="Kleurcode (bv. RAL 9010)" class="w-full border p-2 rounded" />
+      <input type="text" name="type" placeholder="Type (mat, zijdeglans...)" class="w-full border p-2 rounded" />
+      <input type="date" name="gekocht" class="w-full border p-2 rounded" />
+      <textarea name="opmerkingen" placeholder="Opmerkingen" rows="2" class="w-full border p-2 rounded"></textarea>
+
+      <div>
+        <label class="block font-medium mb-1">📷 Foto van de muur</label>
+        <input type="file" accept="image/*" id="muurfoto" required class="w-full" />
+      </div>
+      <div>
+        <label class="block font-medium mb-1">📦 Foto van het verfblik</label>
+        <input type="file" accept="image/*" id="verfblikfoto" required class="w-full" />
+      </div>
+
+      <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Opslaan</button>
+      <p id="status" class="text-sm mt-2 text-gray-600"></p>
+    </form>
+
+    <a href="overzicht.html" class="mt-6 inline-block text-blue-600 hover:underline">📋 Overzicht bekijken</a>
+  </div>
+
+  <script>
+    const form = document.getElementById('verfForm');
+    const status = document.getElementById('status');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      status.textContent = "Bezig met uploaden...";
+
+      const muurfile = document.getElementById('muurfoto').files[0];
+      const blikfile = document.getElementById('verfblikfoto').files[0];
+
+      const toBase64 = file => new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsArrayBuffer(file);
+        reader.onload = () => resolve(btoa(
+          new Uint8Array(reader.result)
+            .reduce((data, byte) => data + String.fromCharCode(byte), '')
+        ));
+        reader.onerror = error => reject(error);
+      });
+
+      const muurfoto = await toBase64(muurfile);
+      const verfblikfoto = await toBase64(blikfile);
+
+      const formData = {
+        locatie: form.locatie.value,
+        merk: form.merk.value,
+        kleurcode: form.kleurcode.value,
+        type: form.type.value,
+        gekocht: form.gekocht.value,
+        opmerkingen: form.opmerkingen.value,
+        muurfoto,
+        verfblikfoto
+      };
+
+      try {
+        const res = await fetch("https://script.google.com/macros/s/AKfycbyzc0WkpC0dzJ1KleJ4721ROD2tbaxzm_eR4iI043V_8SBpoh_eIyn1rzu6MsS3XW3q/exec", {
+          method: "POST",
+          body: JSON.stringify(formData),
+          headers: { "Content-Type": "application/json" }
+        });
+
+        const text = await res.text();
+        if (text.includes("OK")) {
+          status.textContent = "✅ Verf opgeslagen!";
+          form.reset();
+        } else {
+          status.textContent = "❌ Fout bij opslaan: " + text;
+        }
+      } catch (err) {
+        status.textContent = "❌ Netwerkfout: " + err;
+      }
+    });
+  </script>
+</body>
+</html>
