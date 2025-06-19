@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>VerfMuur Registratie</title>
+  <title>VerfMuur Registraties</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 p-4">
@@ -70,7 +70,7 @@
       };
 
       try {
-        const res = await fetch("https://script.google.com/macros/s/AKfycbyzc0WkpC0dzJ1KleJ4721ROD2tbaxzm_eR4iI043V_8SBpoh_eIyn1rzu6MsS3XW3q/exec", {
+        const res = await fetch("https://script.google.com/macros/s/AKfycby7X8yQ2QnATestScriptOK1234567890abcdef/exec", {
           method: "POST",
           body: JSON.stringify(formData),
           headers: { "Content-Type": "application/json" }
@@ -81,9 +81,7 @@
           status.textContent = "✅ Verf opgeslagen!";
           form.reset();
         } else {
-          console.error("Volledige foutmelding van server:", text);
-          status.textContent = "❌ Fout bij opslaan. Check de browserconsole (F12).";
-
+          status.textContent = "❌ Fout bij opslaan: " + text;
         }
       } catch (err) {
         status.textContent = "❌ Netwerkfout: " + err;
