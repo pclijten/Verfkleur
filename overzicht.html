@@ -19,7 +19,7 @@
     const lijst = document.getElementById('lijst');
 
     async function haalData() {
-      const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${SHEET_NAME}`;
+      const url = `https://docs.google.com/spreadsheets/d/${1-aHl3aCOEQVvM7mAe0yzjeQXwMphExr3OKv1azrJ4DA}/gviz/tq?tqx=out:json&sheet=${SHEET_NAME}`;
       const res = await fetch(url);
       const text = await res.text();
       const json = JSON.parse(text.substring(47).slice(0, -2));
