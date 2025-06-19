@@ -305,7 +305,7 @@
       [lijst, noData, errorMessage].forEach(el => el.classList.add('hidden'));
       loading.classList.remove('hidden');
 
-      if (GOOGLE_SCRIPT_URL === "PLAK_HIER_JE_GOOGLE_APPS_SCRIPT_URL") {
+      if (GOOGLE_SCRIPT_URL === "https://script.google.com/macros/s/AKfycbwPAMcJA0CPcgzYXHbWXdmNg-2rCYfDOoLENQNTvQiDu_QrVau8uf9WDZUmJM97VtFg/exec") {
         loading.classList.add('hidden');
         errorMessage.classList.remove('hidden');
         document.querySelector('#error-message p:first-of-type').textContent = 'Google Apps Script niet geconfigureerd';
