@@ -44,6 +44,103 @@
 </head>
 <body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen p-4">
   <div class="max-w-6xl mx-auto">
+    <!-- Configuration Alert -->
+    <div id="config-alert" class="mb-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+      <div class="flex items-center">
+        <div class="text-yellow-600 mr-3">⚠️</div>
+        <div>
+          <p class="font-medium text-yellow-800">Google Apps Script configuratie vereist</p>
+          <p class="text-sm text-yellow-700 mt-1">
+            Vervang de GOOGLE_SCRIPT_URL in de code met jouw werkelijke Google Apps Script URL om gegevens op te slaan.
+            <button id="show-instructions" class="text-blue-600 underline ml-2">Toon instructies</button>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Instructions Modal -->
+    <div id="instructions-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+      <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-lg max-w-2xl w-full max-h-90vh overflow-y-auto">
+          <div class="p-6">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-xl font-bold">Google Apps Script Setup</h3>
+              <button id="close-instructions" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+            </div>
+            <div class="space-y-4 text-sm">
+              <div>
+                <h4 class="font-semibold mb-2">Stap 1: Maak een Google Spreadsheet</h4>
+                <p>Ga naar Google Sheets en maak een nieuwe spreadsheet met de volgende kolommen:</p>
+                <code class="block bg-gray-100 p-2 mt-1 rounded">Timestamp | Locatie | Merk | Kleurcode | Type | Gekocht | Opmerkingen | Muurfoto | Verfblikfoto</code>
+              </div>
+              <div>
+                <h4 class="font-semibold mb-2">Stap 2: Maak Google Apps Script</h4>
+                <p>Ga naar <a href="https://script.google.com" target="_blank" class="text-blue-600 underline">script.google.com</a> en maak een nieuw project.</p>
+              </div>
+              <div>
+                <h4 class="font-semibold mb-2">Stap 3: Voeg de code toe</h4>
+                <pre class="bg-gray-100 p-3 rounded text-xs overflow-x-auto">function doPost(e) {
+  try {
+    const data = JSON.parse(e.postData.contents);
+    const sheet = SpreadsheetApp.openById('1-aHl3aCOEQVvM7mAe0yzjeQXwMphExr3OKv1azrJ4DA').getActiveSheet();
+    
+    sheet.appendRow([
+      new Date(),
+      data.locatie,
+      data.merk,
+      data.kleurcode,
+      data.type,
+      data.gekocht,
+      data.opmerkingen,
+      data.muurfoto,
+      data.verfblikfoto
+    ]);
+    
+    return ContentService.createTextOutput(JSON.stringify({status: 'OK'}))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (error) {
+    return ContentService.createTextOutput(JSON.stringify({status: 'ERROR', message: error.toString()}))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function doGet(e) {
+  try {
+    const sheet = SpreadsheetApp.openById('1-aHl3aCOEQVvM7mAe0yzjeQXwMphExr3OKv1azrJ4DA').getActiveSheet();
+    const data = sheet.getDataRange().getValues();
+    const headers = data[0];
+    const rows = data.slice(1);
+    
+    const result = rows.map(row => {
+      const obj = {};
+      headers.forEach((header, index) => {
+        obj[header.toLowerCase()] = row[index];
+      });
+      return obj;
+    });
+    
+    return ContentService.createTextOutput(JSON.stringify({status: 'OK', data: result}))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (error) {
+    return ContentService.createTextOutput(JSON.stringify({status: 'ERROR', message: error.toString()}))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}</pre>
+              </div>
+              <div>
+                <h4 class="font-semibold mb-2">Stap 4: Deploy het script</h4>
+                <p>Klik op "Deploy" → "New deployment" → Kies "Web app" → Execute as "Me" → Access "Anyone" → Deploy</p>
+              </div>
+              <div>
+                <h4 class="font-semibold mb-2">Stap 5: Kopieer de URL</h4>
+                <p>Kopieer de Web app URL en vervang de GOOGLE_SCRIPT_URL in deze HTML code.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Tab Navigation -->
     <div class="flex mb-6 bg-white rounded-xl p-2 shadow-sm">
       <button id="tab-register" class="tab-button flex-1 py-3 px-6 rounded-lg font-medium active">
@@ -151,7 +248,7 @@
         <div id="error-message" class="text-center py-8 hidden">
           <div class="text-6xl mb-4">⚠️</div>
           <p class="text-red-500 text-lg">Fout bij laden van gegevens</p>
-          <p class="text-gray-400 text-sm mt-2">Controleer je internetverbinding en probeer opnieuw.</p>
+          <p class="text-gray-400 text-sm mt-2" id="error-details">Controleer je internetverbinding en probeer opnieuw.</p>
         </div>
       </div>
     </div>
@@ -160,6 +257,29 @@
   <script>
     // BELANGRIJK: Vervang deze URL met je eigen Google Apps Script URL
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwPAMcJA0CPcgzYXHbWXdmNg-2rCYfDOoLENQNTvQiDu_QrVau8uf9WDZUmJM97VtFg/exec";
+    
+    // Check if URL is configured
+    const isConfigured = GOOGLE_SCRIPT_URL !== "https://script.google.com/macros/s/AKfycbwPAMcJA0CPcgzYXHbWXdmNg-2rCYfDOoLENQNTvQiDu_QrVau8uf9WDZUmJM97VtFg/exec";
+    
+    // Show/hide configuration alert
+    if (isConfigured) {
+      document.getElementById('config-alert').style.display = 'none';
+    }
+
+    // Instructions modal functionality
+    document.getElementById('show-instructions').addEventListener('click', () => {
+      document.getElementById('instructions-modal').classList.remove('hidden');
+    });
+
+    document.getElementById('close-instructions').addEventListener('click', () => {
+      document.getElementById('instructions-modal').classList.add('hidden');
+    });
+
+    document.getElementById('instructions-modal').addEventListener('click', (e) => {
+      if (e.target.id === 'instructions-modal') {
+        document.getElementById('instructions-modal').classList.add('hidden');
+      }
+    });
     
     // Tab functionality
     const tabButtons = document.querySelectorAll('.tab-button');
@@ -215,12 +335,23 @@
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
+      
+      if (!isConfigured) {
+        showStatus("⚠️ Configureer eerst je Google Apps Script URL!", "warning");
+        return;
+      }
+
       showStatus("Bezig met uploaden...", "info");
 
       try {
         const formData = new FormData(form);
         const muurFile = document.getElementById('muurfoto').files[0];
         const blikFile = document.getElementById('verfblikfoto').files[0];
+
+        if (!muurFile || !blikFile) {
+          showStatus("❌ Beide foto's zijn verplicht!", "error");
+          return;
+        }
 
         // Compress and convert images
         const muurPhoto = await compressImage(muurFile);
@@ -274,21 +405,22 @@
     }
 
     async function submitToGoogleScript(data) {
-      if (GOOGLE_SCRIPT_URL === "https://script.google.com/macros/s/AKfycbwPAMcJA0CPcgzYXHbWXdmNg-2rCYfDOoLENQNTvQiDu_QrVau8uf9WDZUmJM97VtFg/exec") {
-        showStatus("⚠️ Google Apps Script URL niet geconfigureerd!", "warning");
-        return false;
-      }
-
       try {
         const response = await fetch(GOOGLE_SCRIPT_URL, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(data)
+          body: JSON.stringify(data),
+          mode: 'cors'
         });
         
-        return response.ok;
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        return result.status === 'OK';
       } catch (error) {
         console.error('Google Apps Script submission failed:', error);
         return false;
@@ -300,21 +432,29 @@
       const lijst = document.getElementById('lijst');
       const noData = document.getElementById('no-data');
       const errorMessage = document.getElementById('error-message');
+      const errorDetails = document.getElementById('error-details');
 
       // Reset view
       [lijst, noData, errorMessage].forEach(el => el.classList.add('hidden'));
       loading.classList.remove('hidden');
 
-      if (GOOGLE_SCRIPT_URL === "https://script.google.com/macros/s/AKfycbwPAMcJA0CPcgzYXHbWXdmNg-2rCYfDOoLENQNTvQiDu_QrVau8uf9WDZUmJM97VtFg/exec") {
+      if (!isConfigured) {
         loading.classList.add('hidden');
         errorMessage.classList.remove('hidden');
-        document.querySelector('#error-message p:first-of-type').textContent = 'Google Apps Script niet geconfigureerd';
-        document.querySelector('#error-message p:last-of-type').textContent = 'Vervang GOOGLE_SCRIPT_URL in de code met je werkelijke URL.';
+        errorDetails.textContent = 'Google Apps Script niet geconfigureerd. Zie de instructies bovenaan de pagina.';
         return;
       }
 
       try {
-        const response = await fetch(GOOGLE_SCRIPT_URL + '?action=get');
+        const response = await fetch(GOOGLE_SCRIPT_URL + '?action=get', {
+          method: 'GET',
+          mode: 'cors'
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
         const result = await response.json();
         
         loading.classList.add('hidden');
@@ -329,6 +469,7 @@
         console.error('Error loading data:', error);
         loading.classList.add('hidden');
         errorMessage.classList.remove('hidden');
+        errorDetails.textContent = `Fout bij laden: ${error.message}`;
       }
     }
 
@@ -337,7 +478,7 @@
       lijst.innerHTML = '';
 
       // Sort by timestamp (newest first)
-      data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      data.sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
 
       data.forEach((item, index) => {
         const card = document.createElement('div');
