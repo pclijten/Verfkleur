@@ -81,7 +81,9 @@
           status.textContent = "✅ Verf opgeslagen!";
           form.reset();
         } else {
-          status.textContent = "❌ Fout bij opslaan: " + text;
+          console.error("Volledige foutmelding van server:", text);
+          status.textContent = "❌ Fout bij opslaan. Check de browserconsole (F12).";
+
         }
       } catch (err) {
         status.textContent = "❌ Netwerkfout: " + err;
