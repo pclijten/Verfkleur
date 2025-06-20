@@ -1,92 +1,99 @@
 <!DOCTYPE html>
-<html lang="nl">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>VerfMuur Registratie</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-100 p-4">
-  <div class="max-w-xl mx-auto bg-white p-6 rounded-2xl shadow-lg">
-    <h1 class="text-2xl font-bold mb-4">🎨 VerfMuur Registratie</h1>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>VerfMuren Firebase</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+      import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+      import { getStorage, ref, uploadString, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
-    <form id="verfForm" class="space-y-4">
-      <input type="text" name="locatie" placeholder="Locatie (bv. woonkamer links)" required class="w-full border p-2 rounded" />
-      <input type="text" name="merk" placeholder="Merk verf (bv. Flexa)" class="w-full border p-2 rounded" />
-      <input type="text" name="kleurcode" placeholder="Kleurcode (bv. RAL 9010)" class="w-full border p-2 rounded" />
-      <input type="text" name="type" placeholder="Type (mat, zijdeglans...)" class="w-full border p-2 rounded" />
-      <input type="date" name="gekocht" class="w-full border p-2 rounded" />
-      <textarea name="opmerkingen" placeholder="Opmerkingen" rows="2" class="w-full border p-2 rounded"></textarea>
-
-      <div>
-        <label class="block font-medium mb-1">📷 Foto van de muur</label>
-        <input type="file" accept="image/*" id="muurfoto" required class="w-full" />
-      </div>
-      <div>
-        <label class="block font-medium mb-1">📦 Foto van het verfblik</label>
-        <input type="file" accept="image/*" id="verfblikfoto" required class="w-full" />
-      </div>
-
-      <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Opslaan</button>
-      <p id="status" class="text-sm mt-2 text-gray-600"></p>
-    </form>
-
-    <a href="overzicht.html" class="mt-6 inline-block text-blue-600 hover:underline">📋 Overzicht bekijken</a>
-  </div>
-
-  <script>
-    const form = document.getElementById('verfForm');
-    const status = document.getElementById('status');
-
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      status.textContent = "Bezig met uploaden...";
-
-      const muurfile = document.getElementById('muurfoto').files[0];
-      const blikfile = document.getElementById('verfblikfoto').files[0];
-
-      const toBase64 = file => new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsArrayBuffer(file);
-        reader.onload = () => resolve(btoa(
-          new Uint8Array(reader.result)
-            .reduce((data, byte) => data + String.fromCharCode(byte), '')
-        ));
-        reader.onerror = error => reject(error);
-      });
-
-      const muurfoto = await toBase64(muurfile);
-      const verfblikfoto = await toBase64(blikfile);
-
-      const formData = {
-        locatie: form.locatie.value,
-        merk: form.merk.value,
-        kleurcode: form.kleurcode.value,
-        type: form.type.value,
-        gekocht: form.gekocht.value,
-        opmerkingen: form.opmerkingen.value,
-        muurfoto,
-        verfblikfoto
+      const firebaseConfig = {
+        apiKey: "AIzaSyDZ7ptEUMHoOsln9B0FZ_Juct0KZUk5cvs",
+        authDomain: "verfmuren.firebaseapp.com",
+        projectId: "verfmuren",
+        storageBucket: "verfmuren.appspot.com",
+        messagingSenderId: "419449044998",
+        appId: "1:419449044998:web:9511b6f54d6e378850c387",
+        measurementId: "G-0XH7PJXJXN"
       };
 
-      try {
-        const res = await fetch('/api/proxy', {
-          method: "POST",
-          body: JSON.stringify(formData),
-          headers: { "Content-Type": "application/json" }
-        });
+      const app = initializeApp(firebaseConfig);
+      const db = getFirestore(app);
+      const storage = getStorage(app);
 
-        const text = await res.text();
-        if (text.includes("OK")) {
-          status.textContent = "✅ Verf opgeslagen!";
-          form.reset();
-        } else {
-          status.textContent = "❌ Fout bij opslaan: " + text;
-        }
-      } catch (err) {
-        status.textContent = "❌ Netwerkfout: " + err;
-      }
-    });
-  </script>
-</body>
+      document.addEventListener("DOMContentLoaded", () => {
+        const form = document.getElementById("verfForm");
+        const status = document.getElementById("status");
+
+        form.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          status.textContent = "⏳ Bezig met opslaan...";
+          const fd = new FormData(form);
+
+          const muurfile = fd.get("muurfoto");
+          const blikfile = fd.get("verfblikfoto");
+
+          const toBase64 = (file) => {
+            return new Promise((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onload = () => resolve(reader.result);
+              reader.onerror = reject;
+              reader.readAsDataURL(file);
+            });
+          };
+
+          try {
+            const muurDataUrl = await toBase64(muurfile);
+            const blikDataUrl = await toBase64(blikfile);
+
+            const muurRef = ref(storage, `muurfotos/${Date.now()}_muur.jpg`);
+            const blikRef = ref(storage, `verfblikken/${Date.now()}_blik.jpg`);
+
+            await uploadString(muurRef, muurDataUrl, 'data_url');
+            await uploadString(blikRef, blikDataUrl, 'data_url');
+
+            const muurUrl = await getDownloadURL(muurRef);
+            const blikUrl = await getDownloadURL(blikRef);
+
+            await addDoc(collection(db, "verfregistraties"), {
+              tijd: new Date().toISOString(),
+              locatie: fd.get("locatie") || "",
+              merk: fd.get("merk") || "",
+              kleurcode: fd.get("kleurcode") || "",
+              type: fd.get("type") || "",
+              gekocht: fd.get("gekocht") || "",
+              opmerkingen: fd.get("opmerkingen") || "",
+              muurFotoUrl: muurUrl,
+              verfBlikFotoUrl: blikUrl
+            });
+
+            status.textContent = "✅ Verf opgeslagen!";
+            form.reset();
+          } catch (err) {
+            console.error(err);
+            status.textContent = "❌ Fout bij opslaan: " + err;
+          }
+        });
+      });
+    </script>
+  </head>
+  <body class="bg-gray-100 p-6">
+    <div class="max-w-xl mx-auto bg-white p-6 rounded-xl shadow">
+      <h1 class="text-2xl font-bold mb-4">🎨 VerfMuur Registratie (Firebase)</h1>
+      <form id="verfForm" class="space-y-4">
+        <input type="text" name="locatie" placeholder="Locatie" required class="w-full border p-2 rounded" />
+        <input type="text" name="merk" placeholder="Merk" class="w-full border p-2 rounded" />
+        <input type="text" name="kleurcode" placeholder="Kleurcode" class="w-full border p-2 rounded" />
+        <input type="text" name="type" placeholder="Type" class="w-full border p-2 rounded" />
+        <input type="date" name="gekocht" class="w-full border p-2 rounded" />
+        <textarea name="opmerkingen" placeholder="Opmerkingen" class="w-full border p-2 rounded"></textarea>
+        <label>Muurfoto: <input type="file" name="muurfoto" accept="image/*" required></label>
+        <label>Verfblikfoto: <input type="file" name="verfblikfoto" accept="image/*" required></label>
+        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Opslaan</button>
+        <div id="status" class="mt-2 text-sm text-gray-600"></div>
+      </form>
+    </div>
+  </body>
 </html>
