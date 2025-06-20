@@ -84,13 +84,21 @@
           <div class="grid md:grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">📷 Foto van de muur *</label>
-              <input type="file" accept="image/*" id="muurfoto" required 
+              <input type="file" accept="image/*" capture="environment" id="muurfoto" required 
                      class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+              <div id="muurPreview" class="mt-2 hidden">
+                <img id="muurPreviewImg" class="w-full h-32 object-cover rounded-lg" />
+                <p id="muurSize" class="text-xs text-gray-500 mt-1"></p>
+              </div>
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">📦 Foto van het verfblik *</label>
-              <input type="file" accept="image/*" id="verfblikfoto" required 
+              <input type="file" accept="image/*" capture="environment" id="verfblikfoto" required 
                      class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+              <div id="blikPreview" class="mt-2 hidden">
+                <img id="blikPreviewImg" class="w-full h-32 object-cover rounded-lg" />
+                <p id="blikSize" class="text-xs text-gray-500 mt-1"></p>
+              </div>
             </div>
           </div>
 
@@ -179,6 +187,125 @@
     const fotoModal = document.getElementById('fotoModal');
     const modalFoto = document.getElementById('modalFoto');
     const sluitModal = document.getElementById('sluitModal');
+
+    // Beeldcompressie functie
+    function compressImage(file, maxSizeMB = 5, quality = 0.8) {
+      return new Promise((resolve) => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
+        
+        img.onload = function() {
+          // Bereken nieuwe dimensies (max 1920px breed)
+          let { width, height } = img;
+          const maxWidth = 1920;
+          const maxHeight = 1920;
+          
+          if (width > height) {
+            if (width > maxWidth) {
+              height = (height * maxWidth) / width;
+              width = maxWidth;
+            }
+          } else {
+            if (height > maxHeight) {
+              width = (width * maxHeight) / height;
+              height = maxHeight;
+            }
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          
+          // Teken en comprimeer
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          // Probeer verschillende kwaliteitsniveaus tot onder de limiet
+          let currentQuality = quality;
+          const tryCompress = () => {
+            canvas.toBlob((blob) => {
+              const sizeMB = blob.size / (1024 * 1024);
+              console.log(`Compressed to ${sizeMB.toFixed(2)}MB at quality ${currentQuality}`);
+              
+              if (sizeMB > maxSizeMB && currentQuality > 0.1) {
+                currentQuality -= 0.1;
+                tryCompress();
+              } else {
+                // Maak een nieuwe File object
+                const compressedFile = new File([blob], file.name, {
+                  type: 'image/jpeg',
+                  lastModified: Date.now()
+                });
+                resolve(compressedFile);
+              }
+            }, 'image/jpeg', currentQuality);
+          };
+          
+          tryCompress();
+        };
+        
+        img.src = URL.createObjectURL(file);
+      });
+    }
+
+    // Preview en compress functie
+    async function handleFileSelect(inputElement, previewElement, previewImg, sizeElement) {
+      const file = inputElement.files[0];
+      if (!file) return;
+
+      console.log(`Original file size: ${(file.size / (1024 * 1024)).toFixed(2)}MB`);
+      
+      // Toon loading
+      sizeElement.textContent = 'Comprimeren...';
+      previewElement.classList.remove('hidden');
+      
+      try {
+        // Comprimeer als bestand groter is dan 1MB
+        let processedFile = file;
+        if (file.size > 1024 * 1024) {
+          processedFile = await compressImage(file);
+        }
+        
+        // Update de file input met het gecomprimeerde bestand
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(processedFile);
+        inputElement.files = dataTransfer.files;
+        
+        // Toon preview
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          previewImg.src = e.target.result;
+          const sizeMB = (processedFile.size / (1024 * 1024)).toFixed(2);
+          sizeElement.textContent = `${sizeMB}MB`;
+          sizeElement.className = processedFile.size > 5 * 1024 * 1024 ? 
+            'text-xs text-red-500 mt-1' : 'text-xs text-green-600 mt-1';
+        };
+        reader.readAsDataURL(processedFile);
+        
+      } catch (error) {
+        console.error('Error compressing image:', error);
+        sizeElement.textContent = 'Fout bij comprimeren';
+        sizeElement.className = 'text-xs text-red-500 mt-1';
+      }
+    }
+
+    // Event listeners voor foto upload
+    document.getElementById('muurfoto').addEventListener('change', (e) => {
+      handleFileSelect(
+        e.target,
+        document.getElementById('muurPreview'),
+        document.getElementById('muurPreviewImg'),
+        document.getElementById('muurSize')
+      );
+    });
+
+    document.getElementById('verfblikfoto').addEventListener('change', (e) => {
+      handleFileSelect(
+        e.target,
+        document.getElementById('blikPreview'),
+        document.getElementById('blikPreviewImg'),
+        document.getElementById('blikSize')
+      );
+    });
 
     // Navigatie
     btnToevoegen.addEventListener('click', () => {
@@ -294,6 +421,10 @@
 
         status.innerHTML = '<div class="text-green-600">✅ Verf succesvol opgeslagen!</div>';
         verfForm.reset();
+        
+        // Reset previews
+        document.getElementById('muurPreview').classList.add('hidden');
+        document.getElementById('blikPreview').classList.add('hidden');
         
         setTimeout(() => {
           status.innerHTML = '';
