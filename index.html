@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>VerfMuur App</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-app-compat.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-firestore-compat.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-storage-compat.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
 </head>
 <body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
   <div class="container mx-auto px-4 py-8">
@@ -152,9 +152,16 @@
     };
 
     // Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-    const storage = firebase.storage();
+    let db, storage;
+    try {
+      firebase.initializeApp(firebaseConfig);
+      db = firebase.firestore();
+      storage = firebase.storage();
+      console.log('Firebase initialized successfully');
+    } catch (error) {
+      console.error('Firebase initialization error:', error);
+      document.getElementById('status').innerHTML = '<div class="text-red-600">❌ Firebase configuratie fout. Check de browser console.</div>';
+    }
 
     // DOM elementen
     const btnToevoegen = document.getElementById('btnToevoegen');
@@ -195,14 +202,50 @@
 
     // Upload foto naar Firebase Storage
     async function uploadFoto(file, naam) {
-      const storageRef = storage.ref(`fotos/${Date.now()}_${naam}`);
-      const snapshot = await storageRef.put(file);
-      return await snapshot.ref.getDownloadURL();
+      try {
+        console.log(`Uploading ${naam}:`, file.name, file.size);
+        const storageRef = storage.ref(`fotos/${Date.now()}_${naam}_${file.name}`);
+        
+        // Upload met progress monitoring
+        const uploadTask = storageRef.put(file);
+        
+        return new Promise((resolve, reject) => {
+          uploadTask.on('state_changed', 
+            (snapshot) => {
+              const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+              console.log(`Upload ${naam} is ${progress}% done`);
+            }, 
+            (error) => {
+              console.error(`Upload error for ${naam}:`, error);
+              reject(error);
+            }, 
+            async () => {
+              try {
+                const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+                console.log(`Upload complete for ${naam}:`, downloadURL);
+                resolve(downloadURL);
+              } catch (error) {
+                console.error(`Error getting download URL for ${naam}:`, error);
+                reject(error);
+              }
+            }
+          );
+        });
+      } catch (error) {
+        console.error(`Error in uploadFoto for ${naam}:`, error);
+        throw error;
+      }
     }
 
     // Form submit
     verfForm.addEventListener('submit', async (e) => {
       e.preventDefault();
+      
+      // Check if Firebase is initialized
+      if (!db || !storage) {
+        status.innerHTML = '<div class="text-red-600">❌ Firebase niet geïnitialiseerd. Herlaad de pagina.</div>';
+        return;
+      }
       
       const submitBtn = e.target.querySelector('button[type="submit"]');
       submitBtn.disabled = true;
@@ -217,6 +260,13 @@
           throw new Error('Beide foto\'s zijn verplicht');
         }
 
+        // Valideer bestandsgrootte (max 5MB per foto)
+        const maxSize = 5 * 1024 * 1024; // 5MB
+        if (muurFile.size > maxSize || blikFile.size > maxSize) {
+          throw new Error('Foto\'s mogen maximaal 5MB groot zijn');
+        }
+
+        console.log('Starting upload process...');
         status.innerHTML = '<div class="text-blue-600">📷 Fotos uploaden...</div>';
         
         const [muurFotoUrl, blikFotoUrl] = await Promise.all([
@@ -224,6 +274,7 @@
           uploadFoto(blikFile, 'blik')
         ]);
 
+        console.log('Photos uploaded, saving to Firestore...');
         status.innerHTML = '<div class="text-blue-600">💾 Gegevens opslaan...</div>';
 
         const verfData = {
@@ -238,6 +289,7 @@
           toegevoegd: firebase.firestore.FieldValue.serverTimestamp()
         };
 
+        console.log('Saving to Firestore:', verfData);
         await db.collection('verfmuren').add(verfData);
 
         status.innerHTML = '<div class="text-green-600">✅ Verf succesvol opgeslagen!</div>';
@@ -248,8 +300,19 @@
         }, 3000);
 
       } catch (error) {
-        console.error('Error:', error);
-        status.innerHTML = `<div class="text-red-600">❌ Fout: ${error.message}</div>`;
+        console.error('Error in form submit:', error);
+        let errorMessage = error.message;
+        
+        // Specifieke Firebase error messages
+        if (error.code === 'storage/unauthorized') {
+          errorMessage = 'Geen toegang tot Firebase Storage. Check de security rules.';
+        } else if (error.code === 'permission-denied') {
+          errorMessage = 'Geen toegang tot Firestore. Check de security rules.';
+        } else if (error.code === 'failed-precondition') {
+          errorMessage = 'Firebase database niet correct geconfigureerd.';
+        }
+        
+        status.innerHTML = `<div class="text-red-600">❌ Fout: ${errorMessage}</div>`;
       } finally {
         submitBtn.disabled = false;
         submitText.textContent = 'Opslaan';
