@@ -384,7 +384,6 @@
     const verfBewerkModal = document.getElementById('verfBewerkModal');
     const sluitVerfBewerkModal = document.getElementById('sluitVerfBewerkModal');
     const verfBewerkForm = document.getElementById('verfBewerkForm');
-    const annuleerVerfBewerken = document.getElementById('annuleerVerfBewerken');
 
     // Navigatie functies
     function toonSectie(actieveSectie, actieveBtn) {
@@ -550,25 +549,35 @@
         document.querySelectorAll('.delen-btn').forEach(btn => {
           btn.addEventListener('click', (e) => {
             e.stopPropagation();
-            const kaart = e.target.closest('.bg-white');
-            const muurData = JSON.parse(kaart.dataset.muurData);
-            deelViaWhatsApp(muurData);
+            e.preventDefault();
+            const kaart = e.target.closest('[data-muur-data]');
+            if (kaart && kaart.dataset.muurData) {
+              try {
+                const muurData = JSON.parse(kaart.dataset.muurData);
+                console.log('Delen muur:', muurData);
+                deelViaWhatsApp(muurData);
+              } catch (error) {
+                console.error('Error parsing muur data:', error);
+              }
+            }
           });
         });
 
         // Event listeners voor bewerken
         document.querySelectorAll('.bewerk-verf-btn').forEach(btn => {
-          btn.addEventListener('click', async (e) => {
-            const id = e.target.dataset.id;
-            await openVerfBewerkModal(id);
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const id = e.target.closest('[data-id]').dataset.id;
+            openVerfBewerkModal(id);
           });
         });
 
         // Event listeners voor verwijderen
         document.querySelectorAll('.verwijder-verf-btn').forEach(btn => {
           btn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const id = e.target.closest('[data-id]').dataset.id;
             if (confirm('Weet je zeker dat je deze verf wilt verwijderen?')) {
-              const id = e.target.dataset.id;
               try {
                 // Verwijder ook de foto als die bestaat
                 const doc = await db.collection('verven').doc(id).get();
@@ -917,7 +926,7 @@
         verfmuren.forEach(muur => {
           const kaart = document.createElement('div');
           kaart.className = 'bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow';
-          kaart.dataset.muurData = JSON.stringify(muur); // Bewaar muur data in element
+          kaart.setAttribute('data-muur-data', JSON.stringify(muur)); // Bewaar muur data in element
           
           const datum = muur.toegevoegd ? 
             new Date(muur.toegevoegd.seconds * 1000).toLocaleDateString('nl-NL') : 
@@ -1043,8 +1052,59 @@
       }
     }
 
+    // Deel via WhatsApp functie
+    function deelViaWhatsApp(muur) {
+      try {
+        console.log('Delen via WhatsApp:', muur);
+        
+        // Maak een tekst bericht met alle details
+        let bericht = `🎨 VerfMuur Details\n\n`;
+        bericht += `📍 Locatie: ${muur.locatie}\n`;
+        bericht += `🎨 Verf: ${muur.merk} - ${muur.kleurcode}\n`;
+        
+        if (muur.kleurnaam) {
+          bericht += `🏷️ Kleurnaam: ${muur.kleurnaam}\n`;
+        }
+        
+        bericht += `✨ Type: ${muur.type}\n`;
+        
+        if (muur.liters) {
+          bericht += `📏 Hoeveelheid: ${muur.liters} liter\n`;
+        }
+        
+        if (muur.gekocht) {
+          const datum = new Date(muur.gekocht).toLocaleDateString('nl-NL');
+          bericht += `📅 Gekocht op: ${datum}\n`;
+        }
+        
+        if (muur.opmerkingen) {
+          bericht += `📝 Opmerkingen: ${muur.opmerkingen}\n`;
+        }
+        
+        bericht += `\n🔗 Foto: ${muur.muurFoto}`;
+        
+        // Encode het bericht voor URL
+        const encodedBericht = encodeURIComponent(bericht);
+        
+        // Open WhatsApp
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
+        if (isMobile) {
+          // Mobiel: gebruik window.location voor betere compatibiliteit
+          window.location.href = `whatsapp://send?text=${encodedBericht}`;
+        } else {
+          // Desktop: open WhatsApp Web
+          window.open(`https://wa.me/?text=${encodedBericht}`, '_blank');
+        }
+      } catch (error) {
+        console.error('Error sharing via WhatsApp:', error);
+        alert('Kon niet delen via WhatsApp. Probeer het opnieuw.');
+      }
+    }
+
     // Open verf bewerk modal
     async function openVerfBewerkModal(id) {
+      console.log('Opening verf bewerk modal voor id:', id);
       try {
         const doc = await db.collection('verven').doc(id).get();
         if (!doc.exists) {
@@ -1224,10 +1284,6 @@
       verfBewerkModal.classList.add('hidden');
     });
 
-    annuleerVerfBewerken.addEventListener('click', () => {
-      verfBewerkModal.classList.add('hidden');
-    });
-
     // Zoek en filter functionaliteit
     let zoekTimeout;
     zoekInput.addEventListener('input', (e) => {
@@ -1243,6 +1299,14 @@
 
     // Initialisatie
     document.addEventListener('DOMContentLoaded', () => {
+      // Annuleer knop event listener
+      const annuleerVerfBewerken = document.getElementById('annuleerVerfBewerken');
+      if (annuleerVerfBewerken) {
+        annuleerVerfBewerken.addEventListener('click', () => {
+          verfBewerkModal.classList.add('hidden');
+        });
+      }
+      
       // Herstel laatste actieve tab
       const laatsteTab = localStorage.getItem('actieveTab');
       if (laatsteTab === 'btnVerfBeheer') {
