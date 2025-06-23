@@ -11,202 +11,590 @@
 </head>
 <body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
   <div class="container mx-auto px-4 py-8">
+    <!-- Header -->
     <div class="text-center mb-8">
       <h1 class="text-4xl font-bold text-gray-800 mb-2">🎨 VerfMuur</h1>
-      <p class="text-gray-600">Houd je verfkeuzes bij</p>
+      <p class="text-gray-600">Houd je verfkeuzes bij met foto's</p>
     </div>
 
+    <!-- Navigation -->
     <div class="flex justify-center mb-8">
-      <div class="bg-white rounded-xl shadow-lg p-1 flex flex-wrap justify-center space-x-2">
-        <button id="btnVerfBeheer" class="px-4 py-2 rounded-lg text-gray-600 font-medium transition-all hover:bg-gray-100">Verf Beheer</button>
-        <button id="btnToevoegen" class="px-4 py-2 rounded-lg text-gray-600 font-medium transition-all hover:bg-gray-100">Muur Toevoegen</button>
-        <button id="btnOverzicht" class="px-4 py-2 rounded-lg text-gray-600 font-medium transition-all hover:bg-gray-100">Overzicht</button>
+      <div class="bg-white rounded-xl shadow-lg p-1 flex flex-wrap justify-center gap-1">
+        <button id="btnVerfBeheer" class="px-4 py-2 rounded-lg text-gray-600 font-medium transition-all hover:bg-gray-100">
+          🎨 Verf Beheer
+        </button>
+        <button id="btnToevoegen" class="px-4 py-2 rounded-lg bg-blue-600 text-white font-medium transition-all">
+          ➕ Muur Toevoegen
+        </button>
+        <button id="btnOverzicht" class="px-4 py-2 rounded-lg text-gray-600 font-medium transition-all hover:bg-gray-100">
+          📋 Overzicht
+        </button>
       </div>
     </div>
 
-    <!-- Verfbeheer -->
-    <div id="verfBeheerSectie" class="hidden">
-      <div class="bg-white p-6 rounded-xl shadow max-w-xl mx-auto">
-        <h2 class="text-xl font-bold mb-4">Voeg een verf toe</h2>
-        <form id="verfBeheerForm" class="space-y-4">
-          <input name="merk" placeholder="Merk" required class="w-full p-2 border rounded"/>
-          <input name="kleurcode" placeholder="Kleurcode" required class="w-full p-2 border rounded"/>
-          <input name="type" placeholder="Type (bv. Mat)" required class="w-full p-2 border rounded"/>
-          <input name="kleurnaam" placeholder="Kleurnaam (optioneel)" class="w-full p-2 border rounded"/>
-          <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded">Toevoegen</button>
-          <div id="verfBeheerStatus" class="text-sm mt-2 text-center"></div>
+    <!-- Verf Beheer Sectie -->
+    <div id="verfBeheerSectie" class="hidden max-w-4xl mx-auto">
+      <div class="bg-white rounded-2xl shadow-xl p-8">
+        <h2 class="text-2xl font-bold mb-6 flex items-center">
+          <span class="mr-2">🎨</span>
+          Verf Beheren
+        </h2>
+
+        <form id="verfBeheerForm" class="space-y-6 mb-8">
+          <div class="grid md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Merk *</label>
+              <input type="text" name="merk" placeholder="bv. Flexa, Sigma, Dulux" required 
+                     class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Kleurcode *</label>
+              <input type="text" name="kleurcode" placeholder="bv. RAL 9010, S 0502-Y" required 
+                     class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+            </div>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Type *</label>
+              <select name="type" required class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <option value="">Selecteer type</option>
+                <option value="Mat">Mat</option>
+                <option value="Zijdeglans">Zijdeglans</option>
+                <option value="Hoogglans">Hoogglans</option>
+                <option value="Satijn">Satijn</option>
+                <option value="Eggshell">Eggshell</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Kleurnaam</label>
+              <input type="text" name="kleurnaam" placeholder="bv. Wit, Gebroken wit, Lichtgrijs" 
+                     class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+            </div>
+          </div>
+
+          <!-- Foto sectie voor verf -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">📷 Foto van de verf (optioneel)</label>
+            <div class="flex gap-2 mb-2">
+              <input type="file" accept="image/*" capture="environment" id="verfFoto" 
+                     class="flex-1 border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+              <button type="button" id="cameraVerfBtn" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                📷 Camera
+              </button>
+            </div>
+            <div id="verfFotoPreview" class="hidden mt-2">
+              <img id="verfFotoPreviewImg" class="w-32 h-32 object-cover rounded-lg border" />
+              <p id="verfFotoSize" class="text-xs text-gray-500 mt-1"></p>
+            </div>
+          </div>
+
+          <button type="submit" class="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white py-3 px-6 rounded-lg font-medium hover:from-green-700 hover:to-emerald-700 transition-all transform hover:scale-105">
+            Verf Toevoegen
+          </button>
+          
+          <div id="verfBeheerStatus" class="text-center text-sm mt-4"></div>
+        </form>
+
+        <!-- Beschikbare Verven -->
+        <div>
+          <h3 class="text-lg font-bold mb-4">Beschikbare Verven</h3>
+          <div id="verfLijstBeheer" class="grid md:grid-cols-2 gap-4 max-h-96 overflow-y-auto">
+            <div class="col-span-full text-center py-4 text-gray-500">Laden...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toevoegen Sectie -->
+    <div id="toevoegenSectie" class="max-w-2xl mx-auto">
+      <div class="bg-white rounded-2xl shadow-xl p-8">
+        <h2 class="text-2xl font-bold mb-6 flex items-center">
+          <span class="mr-2">➕</span>
+          Nieuwe Muur Toevoegen
+        </h2>
+
+        <form id="verfForm" class="space-y-6">
+          <div class="grid md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Locatie *</label>
+              <input type="text" name="locatie" placeholder="bv. woonkamer links, slaapkamer" required 
+                     class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Kies Verf *</label>
+              <select name="verfkeuze" id="verfDropdown" required class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <option value="">Selecteer een verf</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Datum gekocht</label>
+            <input type="date" name="gekocht" 
+                   class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Opmerkingen</label>
+            <textarea name="opmerkingen" placeholder="Extra informatie, kleurresultaat, aantal lagen, etc..." rows="3" 
+                      class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">📷 Foto van de muur *</label>
+              <div class="flex gap-2 mb-2">
+                <input type="file" accept="image/*" capture="environment" id="muurfoto" required 
+                       class="flex-1 border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                <button type="button" id="cameraMuurBtn" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                  📷
+                </button>
+              </div>
+              <div id="muurPreview" class="hidden mt-2">
+                <img id="muurPreviewImg" class="w-full h-32 object-cover rounded-lg border" />
+                <p id="muurSize" class="text-xs text-gray-500 mt-1"></p>
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">📦 Foto van het verfblik *</label>
+              <div class="flex gap-2 mb-2">
+                <input type="file" accept="image/*" capture="environment" id="verfblikfoto" required 
+                       class="flex-1 border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                <button type="button" id="cameraBlikBtn" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                  📷
+                </button>
+              </div>
+              <div id="blikPreview" class="hidden mt-2">
+                <img id="blikPreviewImg" class="w-full h-32 object-cover rounded-lg border" />
+                <p id="blikSize" class="text-xs text-gray-500 mt-1"></p>
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 px-6 rounded-lg font-medium hover:from-blue-700 hover:to-indigo-700 transition-all transform hover:scale-105 disabled:opacity-50">
+            <span id="submitText">Opslaan</span>
+          </button>
+          
+          <div id="status" class="text-center text-sm mt-4"></div>
         </form>
       </div>
     </div>
 
-    <!-- Toevoegen -->
-    <div id="toevoegenSectie" class="hidden">
-      <div class="bg-white p-6 rounded-xl shadow max-w-xl mx-auto">
-        <h2 class="text-xl font-bold mb-4">Voeg een muur toe</h2>
-        <form id="verfForm" class="space-y-4">
-          <input name="locatie" placeholder="Locatie" required class="w-full p-2 border rounded"/>
-          <select name="verfkeuze" id="verfDropdown" required class="w-full p-2 border rounded">
-            <option value="">Selecteer een verf</option>
-          </select>
-          <input type="date" name="gekocht" class="w-full p-2 border rounded"/>
-          <textarea name="opmerkingen" placeholder="Opmerkingen" class="w-full p-2 border rounded"></textarea>
-          <input type="file" id="muurfoto" required accept="image/*" class="w-full"/>
-          <input type="file" id="verfblikfoto" required accept="image/*" class="w-full"/>
-          <button type="submit" class="w-full bg-indigo-600 text-white py-2 rounded">Opslaan</button>
-          <div id="status" class="text-sm mt-2 text-center"></div>
-        </form>
-      </div>
-    </div>
-
-    <!-- Overzicht -->
+    <!-- Overzicht Sectie -->
     <div id="overzichtSectie" class="hidden">
-      <div class="bg-white p-6 rounded-xl shadow max-w-2xl mx-auto">
-        <h2 class="text-xl font-bold mb-4">Mijn muren</h2>
-        <div id="verfLijst" class="space-y-2 text-sm">Laden...</div>
+      <div class="mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
+        <h2 class="text-2xl font-bold">📋 Mijn Verfmuren</h2>
+        <div class="flex gap-2 w-full md:w-auto">
+          <input type="text" id="zoekInput" placeholder="Zoek op locatie..." 
+                 class="flex-1 md:w-64 border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+          <button id="btnZoek" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+            🔍
+          </button>
+        </div>
+      </div>
+      
+      <div id="laadIndicator" class="text-center py-8">
+        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <p class="mt-2 text-gray-600">Laden...</p>
+      </div>
+      
+      <div id="verfLijst" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+      
+      <div id="geenResultaten" class="hidden text-center py-12">
+        <div class="text-6xl mb-4">🎨</div>
+        <p class="text-gray-600">Nog geen verfmuren toegevoegd</p>
+        <button onclick="document.getElementById('btnToevoegen').click()" class="mt-4 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
+          Eerste muur toevoegen
+        </button>
       </div>
     </div>
   </div>
 
-  <!-- Bewerken Modal -->
-  <div id="bewerkModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div class="bg-white rounded-xl p-6 w-full max-w-xl relative">
-      <button id="sluitBewerkModal" class="absolute top-2 right-3 text-2xl text-gray-600 hover:text-black">&times;</button>
-      <h2 class="text-xl font-bold mb-4">Muur Bewerken</h2>
+  <!-- Foto Modal -->
+  <div id="fotoModal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl p-4 max-w-4xl max-h-full overflow-auto">
+      <div class="flex justify-end mb-2">
+        <button id="sluitModal" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+      </div>
+      <img id="modalFoto" src="" alt="Foto" class="max-w-full h-auto rounded-lg" />
+    </div>
+  </div>
+
+  <!-- Bewerk Modal -->
+  <div id="bewerkModal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl p-6 max-w-2xl w-full max-h-full overflow-auto">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-xl font-bold">Muur Bewerken</h3>
+        <button id="sluitBewerkModal" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+      </div>
+      
       <form id="bewerkForm" class="space-y-4">
-        <input type="hidden" id="bewerkId">
-        <input id="bewerkLocatie" placeholder="Locatie" required class="w-full p-2 border rounded"/>
-        <textarea id="bewerkOpmerkingen" placeholder="Opmerkingen" class="w-full p-2 border rounded"></textarea>
-        <select id="bewerkVerf" class="w-full p-2 border rounded" required></select>
-        <button type="submit" class="w-full bg-green-600 text-white py-2 rounded">Opslaan</button>
+        <input type="hidden" id="bewerkId" />
+        
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Locatie *</label>
+          <input type="text" id="bewerkLocatie" required 
+                 class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Kies Verf *</label>
+          <select id="bewerkVerfkeuze" required class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            <option value="">Selecteer een verf</option>
+          </select>
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Datum gekocht</label>
+          <input type="date" id="bewerkGekocht" 
+                 class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Opmerkingen</label>
+          <textarea id="bewerkOpmerkingen" rows="3" 
+                    class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+        </div>
+        
+        <div class="flex gap-4">
+          <button type="submit" class="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700">
+            Opslaan
+          </button>
+          <button type="button" id="annuleerBewerken" class="flex-1 bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600">
+            Annuleren
+          </button>
+        </div>
+        
+        <div id="bewerkStatus" class="text-center text-sm"></div>
       </form>
     </div>
   </div>
 
   <script>
+    // Firebase configuratie - Vervang met jouw eigen configuratie
     const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_DOMAIN",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_BUCKET",
-      messagingSenderId: "YOUR_SENDER_ID",
-      appId: "YOUR_APP_ID"
+      apiKey: "AIzaSyDZ7ptEUMHoOsln9B0FZ_Juct0KZUk5cvs",
+      authDomain: "verfmuren.firebaseapp.com",
+      projectId: "verfmuren",
+      storageBucket: "verfmuren.firebasestorage.app",
+      messagingSenderId: "419449044998",
+      appId: "1:419449044998:web:9511b6f54d6e378850c387"
     };
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-    const storage = firebase.storage();
+    // Initialize Firebase
+    let db, storage;
+    try {
+      firebase.initializeApp(firebaseConfig);
+      db = firebase.firestore();
+      storage = firebase.storage();
+      console.log('Firebase initialized successfully');
+    } catch (error) {
+      console.error('Firebase initialization error:', error);
+      showStatus('status', '❌ Firebase configuratie fout. Check de console.', 'error');
+    }
 
+    // Utility functie voor status berichten
+    function showStatus(elementId, message, type = 'info') {
+      const element = document.getElementById(elementId);
+      if (!element) return;
+      
+      const colors = {
+        info: 'text-blue-600',
+        success: 'text-green-600',
+        error: 'text-red-600'
+      };
+      
+      element.innerHTML = `<div class="${colors[type]}">${message}</div>`;
+      
+      if (type === 'success') {
+        setTimeout(() => element.innerHTML = '', 3000);
+      }
+    }
+
+    // DOM elementen
     const btnVerfBeheer = document.getElementById('btnVerfBeheer');
     const btnToevoegen = document.getElementById('btnToevoegen');
     const btnOverzicht = document.getElementById('btnOverzicht');
-
     const verfBeheerSectie = document.getElementById('verfBeheerSectie');
     const toevoegenSectie = document.getElementById('toevoegenSectie');
     const overzichtSectie = document.getElementById('overzichtSectie');
 
-    const bewerkModal = document.getElementById('bewerkModal');
-    const sluitBewerkModal = document.getElementById('sluitBewerkModal');
-    const bewerkForm = document.getElementById('bewerkForm');
-
-    const bewerkId = document.getElementById('bewerkId');
-    const bewerkLocatie = document.getElementById('bewerkLocatie');
-    const bewerkOpmerkingen = document.getElementById('bewerkOpmerkingen');
-    const bewerkVerf = document.getElementById('bewerkVerf');
-
-    const secties = {
-      verfbeheer: { sectie: verfBeheerSectie, knop: btnVerfBeheer },
-      toevoegen: { sectie: toevoegenSectie, knop: btnToevoegen },
-      overzicht: { sectie: overzichtSectie, knop: btnOverzicht }
-    };
-
-    function toonSectie(naam) {
-      Object.values(secties).forEach(({ sectie, knop }) => {
+    // Navigatie functies
+    function toonSectie(actieveSectie, actieveBtn) {
+      // Hide all sections
+      [verfBeheerSectie, toevoegenSectie, overzichtSectie].forEach(sectie => {
         sectie.classList.add('hidden');
-        knop.classList.remove('bg-blue-600', 'text-white');
-        knop.classList.add('text-gray-600', 'hover:bg-gray-100');
       });
-      secties[naam].sectie.classList.remove('hidden');
-      secties[naam].knop.classList.add('bg-blue-600', 'text-white');
-      secties[naam].knop.classList.remove('text-gray-600', 'hover:bg-gray-100');
-      localStorage.setItem('actieveTab', naam);
+      
+      // Reset all buttons
+      [btnVerfBeheer, btnToevoegen, btnOverzicht].forEach(btn => {
+        btn.classList.remove('bg-blue-600', 'text-white');
+        btn.classList.add('text-gray-600', 'hover:bg-gray-100');
+      });
+      
+      // Show active section
+      actieveSectie.classList.remove('hidden');
+      
+      // Style active button
+      actieveBtn.classList.add('bg-blue-600', 'text-white');
+      actieveBtn.classList.remove('text-gray-600', 'hover:bg-gray-100');
     }
 
-    btnVerfBeheer.addEventListener('click', () => toonSectie('verfbeheer'));
-    btnToevoegen.addEventListener('click', () => toonSectie('toevoegen'));
-    btnOverzicht.addEventListener('click', () => toonSectie('overzicht'));
+    // Navigatie event listeners
+    btnVerfBeheer.addEventListener('click', () => {
+      toonSectie(verfBeheerSectie, btnVerfBeheer);
+      laadVerven();
+    });
 
-    document.addEventListener('DOMContentLoaded', () => {
-      toonSectie(localStorage.getItem('actieveTab') || 'toevoegen');
+    btnToevoegen.addEventListener('click', () => {
+      toonSectie(toevoegenSectie, btnToevoegen);
       laadVerfDropdown();
+    });
+
+    btnOverzicht.addEventListener('click', () => {
+      toonSectie(overzichtSectie, btnOverzicht);
       laadVerfmuren();
     });
 
-    async function laadVerfDropdown() {
-      const dropdowns = [document.getElementById('verfDropdown'), document.getElementById('bewerkVerf')];
-      const snapshot = await db.collection('verven').get();
-      dropdowns.forEach(dropdown => {
-        dropdown.innerHTML = '<option value="">Selecteer een verf</option>';
-        snapshot.forEach(doc => {
-          const data = doc.data();
-          const opt = document.createElement('option');
-          opt.value = doc.id;
-          opt.textContent = `${data.merk} - ${data.kleurcode}`;
-          dropdown.appendChild(opt.cloneNode(true));
-        });
+    // Camera functies
+    function setupCameraButton(buttonId, inputId) {
+      const button = document.getElementById(buttonId);
+      const input = document.getElementById(inputId);
+      
+      button.addEventListener('click', () => {
+        input.click();
       });
     }
 
-    async function laadVerfmuren() {
-      const lijst = document.getElementById('verfLijst');
-      lijst.innerHTML = 'Laden...';
-      const snapshot = await db.collection('muren').orderBy('locatie').get();
-      if (snapshot.empty) lijst.innerHTML = '<p class="text-gray-500">Nog geen muren toegevoegd</p>';
-      else lijst.innerHTML = '';
-      snapshot.forEach(doc => {
-        const muur = doc.data();
-        lijst.innerHTML += `
-          <div class='p-2 border rounded flex justify-between items-start'>
-            <div><strong>${muur.locatie}</strong><br>${muur.opmerkingen || ''}</div>
-            <div class="flex gap-2">
-              <button onclick="verwijderMuur('${doc.id}')" class="text-red-600 hover:underline">🗑️</button>
-              <button onclick="bewerkMuur('${doc.id}')" class="text-blue-600 hover:underline">✏️</button>
-            </div>
-          </div>`;
+    // Setup camera buttons
+    setupCameraButton('cameraVerfBtn', 'verfFoto');
+    setupCameraButton('cameraMuurBtn', 'muurfoto');
+    setupCameraButton('cameraBlikBtn', 'verfblikfoto');
+
+    // Beeldcompressie functie
+    function compressImage(file, maxSizeMB = 5, quality = 0.8) {
+      return new Promise((resolve) => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
+        
+        img.onload = function() {
+          // Bereken nieuwe dimensies (max 1920px breed)
+          let { width, height } = img;
+          const maxWidth = 1920;
+          const maxHeight = 1920;
+          
+          if (width > height) {
+            if (width > maxWidth) {
+              height = (height * maxWidth) / width;
+              width = maxWidth;
+            }
+          } else {
+            if (height > maxHeight) {
+              width = (width * maxHeight) / height;
+              height = maxHeight;
+            }
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          
+          // Teken en comprimeer
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          // Probeer verschillende kwaliteitsniveaus tot onder de limiet
+          let currentQuality = quality;
+          const tryCompress = () => {
+            canvas.toBlob((blob) => {
+              const sizeMB = blob.size / (1024 * 1024);
+              console.log(`Compressed to ${sizeMB.toFixed(2)}MB at quality ${currentQuality}`);
+              
+              if (sizeMB > maxSizeMB && currentQuality > 0.1) {
+                currentQuality -= 0.1;
+                tryCompress();
+              } else {
+                const compressedFile = new File([blob], file.name, {
+                  type: 'image/jpeg',
+                  lastModified: Date.now()
+                });
+                resolve(compressedFile);
+              }
+            }, 'image/jpeg', currentQuality);
+          };
+          
+          tryCompress();
+        };
+        
+        img.src = URL.createObjectURL(file);
       });
     }
 
-    async function verwijderMuur(id) {
-      if (confirm("Weet je zeker dat je deze muur wilt verwijderen?")) {
-        await db.collection('muren').doc(id).delete();
-        laadVerfmuren();
+    // Preview en compress functie
+    async function handleFileSelect(inputElement, previewElement, previewImg, sizeElement) {
+      const file = inputElement.files[0];
+      if (!file) return;
+
+      console.log(`Original file size: ${(file.size / (1024 * 1024)).toFixed(2)}MB`);
+      
+      sizeElement.textContent = 'Comprimeren...';
+      previewElement.classList.remove('hidden');
+      
+      try {
+        let processedFile = file;
+        if (file.size > 1024 * 1024) {
+          processedFile = await compressImage(file);
+        }
+        
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(processedFile);
+        inputElement.files = dataTransfer.files;
+        
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          previewImg.src = e.target.result;
+          const sizeMB = (processedFile.size / (1024 * 1024)).toFixed(2);
+          sizeElement.textContent = `${sizeMB}MB`;
+          sizeElement.className = processedFile.size > 5 * 1024 * 1024 ? 
+            'text-xs text-red-500 mt-1' : 'text-xs text-green-600 mt-1';
+        };
+        reader.readAsDataURL(processedFile);
+        
+      } catch (error) {
+        console.error('Error compressing image:', error);
+        sizeElement.textContent = 'Fout bij comprimeren';
+        sizeElement.className = 'text-xs text-red-500 mt-1';
       }
     }
 
-    function bewerkMuur(id) {
-      db.collection('muren').doc(id).get().then(doc => {
-        if (doc.exists) {
-          const muur = doc.data();
-          bewerkId.value = id;
-          bewerkLocatie.value = muur.locatie || '';
-          bewerkOpmerkingen.value = muur.opmerkingen || '';
-          bewerkVerf.value = muur.verfId || '';
-          bewerkModal.classList.remove('hidden');
-        }
-      });
+    // Event listeners voor foto uploads
+    document.getElementById('verfFoto').addEventListener('change', (e) => {
+      handleFileSelect(
+        e.target,
+        document.getElementById('verfFotoPreview'),
+        document.getElementById('verfFotoPreviewImg'),
+        document.getElementById('verfFotoSize')
+      );
+    });
+
+    document.getElementById('muurfoto').addEventListener('change', (e) => {
+      handleFileSelect(
+        e.target,
+        document.getElementById('muurPreview'),
+        document.getElementById('muurPreviewImg'),
+        document.getElementById('muurSize')
+      );
+    });
+
+    document.getElementById('verfblikfoto').addEventListener('change', (e) => {
+      handleFileSelect(
+        e.target,
+        document.getElementById('blikPreview'),
+        document.getElementById('blikPreviewImg'),
+        document.getElementById('blikSize')
+      );
+    });
+
+    // Upload foto naar Firebase Storage
+    async function uploadFoto(file, naam) {
+      try {
+        const storageRef = storage.ref(`fotos/${Date.now()}_${naam}_${file.name}`);
+        const uploadTask = storageRef.put(file);
+        
+        return new Promise((resolve, reject) => {
+          uploadTask.on('state_changed', 
+            (snapshot) => {
+              const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+              console.log(`Upload ${naam} is ${progress}% done`);
+            }, 
+            (error) => {
+              console.error(`Upload error for ${naam}:`, error);
+              reject(error);
+            }, 
+            async () => {
+              try {
+                const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+                resolve(downloadURL);
+              } catch (error) {
+                reject(error);
+              }
+            }
+          );
+        });
+      } catch (error) {
+        throw error;
+      }
     }
 
-    sluitBewerkModal.addEventListener('click', () => bewerkModal.classList.add('hidden'));
+    // Laad verven voor dropdown
+    async function laadVerfDropdown() {
+      try {
+        const snapshot = await db.collection('verven').orderBy('merk').get();
+        const verfDropdown = document.getElementById('verfDropdown');
+        const bewerkVerfkeuze = document.getElementById('bewerkVerfkeuze');
+        
+        verfDropdown.innerHTML = '<option value="">Selecteer een verf</option>';
+        bewerkVerfkeuze.innerHTML = '<option value="">Selecteer een verf</option>';
+        
+        snapshot.forEach(doc => {
+          const verf = doc.data();
+          const optionText = `${verf.merk} - ${verf.kleurcode} (${verf.type})${verf.kleurnaam ? ' - ' + verf.kleurnaam : ''}`;
+          
+          [verfDropdown, bewerkVerfkeuze].forEach(dropdown => {
+            const option = document.createElement('option');
+            option.value = doc.id;
+            option.textContent = optionText;
+            dropdown.appendChild(option);
+          });
+        });
+      } catch (error) {
+        console.error('Error loading verven:', error);
+      }
+    }
 
-    bewerkForm.addEventListener('submit', async (e) => {
+    // Verf beheer form submit
+    document.getElementById('verfBeheerForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      await db.collection('muren').doc(bewerkId.value).update({
-        locatie: bewerkLocatie.value,
-        opmerkingen: bewerkOpmerkingen.value,
-        verfId: bewerkVerf.value
-      });
-      bewerkModal.classList.add('hidden');
-      laadVerfmuren();
+      
+      showStatus('verfBeheerStatus', 'Bezig met opslaan...', 'info');
+      
+      try {
+        const verfData = {
+          merk: e.target.merk.value,
+          kleurcode: e.target.kleurcode.value,
+          type: e.target.type.value,
+          kleurnaam: e.target.kleurnaam.value || '',
+          toegevoegd: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        // Upload foto als die er is
+        const verfFotoFile = document.getElementById('verfFoto').files[0];
+        if (verfFotoFile) {
+          verfData.verfFoto = await uploadFoto(verfFotoFile, 'verf');
+        }
+
+        await db.collection('verven').add(verfData);
+        
+        showStatus('verfBeheerStatus', '✅ Verf succesvol toegevoegd!', 'success');
+        e.target.reset();
+        document.getElementById('verfFotoPreview').classList.add('hidden');
+        laadVerven();
+        laadVerfDropdown();
+
+      } catch (error) {
+        console.error('Error adding verf:', error);
+        showStatus('verfBeheerStatus', '❌ Fout bij toevoegen van verf', 'error');
+      }
     });
-  </script>
-</body>
-</html>
+
+    // Laad verven voor beheer
+    async function laadVerven() {
+      const verfLijstBeheer = document.getElementById('verfLijstBeheer');
+      verfLijstBeheer.innerHTML = '<div class="col-span-full text-center py-4 text-gray-500">Laden...</div>';
+      
+      try {
+        const snapshot = await db.collection('verven').orderBy('merk').get();
+        verfLijstBeheer.innerHTML = '';
+        
+        if (snapshot.empty) {
+          verfLijst
