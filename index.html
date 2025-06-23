@@ -507,21 +507,19 @@
               deelViaWhatsApp(muur);
             }
           });
-        });
-
-        // Event listeners voor bewerken
+        // Event listeners voor bewerken verf
         document.querySelectorAll('.bewerk-verf-btn').forEach(btn => {
-          btn.addEventListener('click', async (e) => {
-            const id = e.target.dataset.id;
-            await openVerfBewerkModal(id);
+          btn.addEventListener('click', (e) => {
+            const id = e.target.closest('button').dataset.id;
+            openVerfBewerkModal(id);
           });
         });
 
-        // Event listeners voor verwijderen
+        // Event listeners voor verwijderen verf
         document.querySelectorAll('.verwijder-verf-btn').forEach(btn => {
           btn.addEventListener('click', async (e) => {
             if (confirm('Weet je zeker dat je deze verf wilt verwijderen?')) {
-              const id = e.target.dataset.id;
+              const id = e.target.closest('button').dataset.id;
               try {
                 // Verwijder ook de foto als die bestaat
                 const doc = await db.collection('verven').doc(id).get();
@@ -997,45 +995,49 @@
 
     // Deel via WhatsApp functie
     function deelViaWhatsApp(muur) {
-      // Maak een tekst bericht met alle details
-      let bericht = `🎨 *VerfMuur Details*\n\n`;
-      bericht += `📍 *Locatie:* ${muur.locatie}\n`;
-      bericht += `🎨 *Verf:* ${muur.merk} - ${muur.kleurcode}\n`;
-      
-      if (muur.kleurnaam) {
-        bericht += `🏷️ *Kleurnaam:* ${muur.kleurnaam}\n`;
-      }
-      
-      bericht += `✨ *Type:* ${muur.type}\n`;
-      
-      if (muur.liters) {
-        bericht += `📏 *Hoeveelheid:* ${muur.liters} liter\n`;
-      }
-      
-      if (muur.gekocht) {
-        const datum = new Date(muur.gekocht).toLocaleDateString('nl-NL');
-        bericht += `📅 *Gekocht op:* ${datum}\n`;
-      }
-      
-      if (muur.opmerkingen) {
-        bericht += `📝 *Opmerkingen:* ${muur.opmerkingen}\n`;
-      }
-      
-      bericht += `\n🔗 *Foto:* ${muur.muurFoto}`;
-      
-      // Encode het bericht voor URL
-      const encodedBericht = encodeURIComponent(bericht);
-      
-      // Open WhatsApp
-      // Voor desktop gebruik web.whatsapp.com, voor mobiel de app
-      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-      
-      if (isMobile) {
-        // Mobiel: open WhatsApp app
-        window.open(`whatsapp://send?text=${encodedBericht}`, '_blank');
-      } else {
-        // Desktop: open WhatsApp Web
-        window.open(`https://web.whatsapp.com/send?text=${encodedBericht}`, '_blank');
+      try {
+        // Maak een tekst bericht met alle details
+        let bericht = `🎨 VerfMuur Details\n\n`;
+        bericht += `📍 Locatie: ${muur.locatie}\n`;
+        bericht += `🎨 Verf: ${muur.merk} - ${muur.kleurcode}\n`;
+        
+        if (muur.kleurnaam) {
+          bericht += `🏷️ Kleurnaam: ${muur.kleurnaam}\n`;
+        }
+        
+        bericht += `✨ Type: ${muur.type}\n`;
+        
+        if (muur.liters) {
+          bericht += `📏 Hoeveelheid: ${muur.liters} liter\n`;
+        }
+        
+        if (muur.gekocht) {
+          const datum = new Date(muur.gekocht).toLocaleDateString('nl-NL');
+          bericht += `📅 Gekocht op: ${datum}\n`;
+        }
+        
+        if (muur.opmerkingen) {
+          bericht += `📝 Opmerkingen: ${muur.opmerkingen}\n`;
+        }
+        
+        bericht += `\n🔗 Foto: ${muur.muurFoto}`;
+        
+        // Encode het bericht voor URL
+        const encodedBericht = encodeURIComponent(bericht);
+        
+        // Open WhatsApp
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
+        if (isMobile) {
+          // Probeer eerst de WhatsApp app
+          window.location.href = `whatsapp://send?text=${encodedBericht}`;
+        } else {
+          // Desktop: open WhatsApp Web
+          window.open(`https://web.whatsapp.com/send?text=${encodedBericht}`, '_blank');
+        }
+      } catch (error) {
+        console.error('Error sharing via WhatsApp:', error);
+        alert('Kon niet delen via WhatsApp. Probeer het opnieuw.');
       }
     }
 
