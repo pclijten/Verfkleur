@@ -5,54 +5,97 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>VerfMuur App</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
 </head>
 <body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
   <div class="container mx-auto px-4 py-8">
-    <!-- Header -->
     <div class="text-center mb-8">
       <h1 class="text-4xl font-bold text-gray-800 mb-2">🎨 VerfMuur</h1>
       <p class="text-gray-600">Houd je verfkeuzes bij</p>
     </div>
 
-    <!-- Navigatie -->
     <div class="flex justify-center mb-8">
       <div class="bg-white rounded-xl shadow-lg p-1 flex flex-wrap justify-center space-x-2">
-        <button id="btnVerfBeheer" class="px-4 py-2 rounded-lg text-gray-600 font-medium transition-all hover:bg-gray-100">
-          Verf Beheer
-        </button>
-        <button id="btnToevoegen" class="px-4 py-2 rounded-lg text-gray-600 font-medium transition-all hover:bg-gray-100">
-          Muur Toevoegen
-        </button>
-        <button id="btnOverzicht" class="px-4 py-2 rounded-lg text-gray-600 font-medium transition-all hover:bg-gray-100">
-          Overzicht
-        </button>
+        <button id="btnVerfBeheer" class="px-4 py-2 rounded-lg text-gray-600 font-medium transition-all hover:bg-gray-100">Verf Beheer</button>
+        <button id="btnToevoegen" class="px-4 py-2 rounded-lg text-gray-600 font-medium transition-all hover:bg-gray-100">Muur Toevoegen</button>
+        <button id="btnOverzicht" class="px-4 py-2 rounded-lg text-gray-600 font-medium transition-all hover:bg-gray-100">Overzicht</button>
       </div>
     </div>
 
-    <!-- Secties -->
+    <!-- Verfbeheer -->
     <div id="verfBeheerSectie" class="hidden">
-      <div class="bg-white p-6 rounded-xl shadow">
-        <h2 class="text-2xl font-bold mb-4">Verf Beheren</h2>
-        <p class="text-gray-600">Inhoud voor verfbeheer komt hier.</p>
+      <div class="bg-white p-6 rounded-xl shadow max-w-xl mx-auto">
+        <h2 class="text-xl font-bold mb-4">Voeg een verf toe</h2>
+        <form id="verfBeheerForm" class="space-y-4">
+          <input name="merk" placeholder="Merk" required class="w-full p-2 border rounded"/>
+          <input name="kleurcode" placeholder="Kleurcode" required class="w-full p-2 border rounded"/>
+          <input name="type" placeholder="Type (bv. Mat)" required class="w-full p-2 border rounded"/>
+          <input name="kleurnaam" placeholder="Kleurnaam (optioneel)" class="w-full p-2 border rounded"/>
+          <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded">Toevoegen</button>
+          <div id="verfBeheerStatus" class="text-sm mt-2 text-center"></div>
+        </form>
       </div>
     </div>
 
+    <!-- Toevoegen -->
     <div id="toevoegenSectie" class="hidden">
-      <div class="bg-white p-6 rounded-xl shadow">
-        <h2 class="text-2xl font-bold mb-4">Muur Toevoegen</h2>
-        <p class="text-gray-600">Formulier om een nieuwe muur toe te voegen komt hier.</p>
+      <div class="bg-white p-6 rounded-xl shadow max-w-xl mx-auto">
+        <h2 class="text-xl font-bold mb-4">Voeg een muur toe</h2>
+        <form id="verfForm" class="space-y-4">
+          <input name="locatie" placeholder="Locatie" required class="w-full p-2 border rounded"/>
+          <select name="verfkeuze" id="verfDropdown" required class="w-full p-2 border rounded">
+            <option value="">Selecteer een verf</option>
+          </select>
+          <input type="date" name="gekocht" class="w-full p-2 border rounded"/>
+          <textarea name="opmerkingen" placeholder="Opmerkingen" class="w-full p-2 border rounded"></textarea>
+          <input type="file" id="muurfoto" required accept="image/*" class="w-full"/>
+          <input type="file" id="verfblikfoto" required accept="image/*" class="w-full"/>
+          <button type="submit" class="w-full bg-indigo-600 text-white py-2 rounded">Opslaan</button>
+          <div id="status" class="text-sm mt-2 text-center"></div>
+        </form>
       </div>
     </div>
 
+    <!-- Overzicht -->
     <div id="overzichtSectie" class="hidden">
-      <div class="bg-white p-6 rounded-xl shadow">
-        <h2 class="text-2xl font-bold mb-4">Overzicht</h2>
-        <p class="text-gray-600">Overzicht van toegevoegde verfmuren komt hier.</p>
+      <div class="bg-white p-6 rounded-xl shadow max-w-2xl mx-auto">
+        <h2 class="text-xl font-bold mb-4">Mijn muren</h2>
+        <div id="verfLijst" class="space-y-2 text-sm">Laden...</div>
       </div>
     </div>
   </div>
 
+  <!-- Bewerken Modal -->
+  <div id="bewerkModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-xl p-6 w-full max-w-xl relative">
+      <button id="sluitBewerkModal" class="absolute top-2 right-3 text-2xl text-gray-600 hover:text-black">&times;</button>
+      <h2 class="text-xl font-bold mb-4">Muur Bewerken</h2>
+      <form id="bewerkForm" class="space-y-4">
+        <input type="hidden" id="bewerkId">
+        <input id="bewerkLocatie" placeholder="Locatie" required class="w-full p-2 border rounded"/>
+        <textarea id="bewerkOpmerkingen" placeholder="Opmerkingen" class="w-full p-2 border rounded"></textarea>
+        <select id="bewerkVerf" class="w-full p-2 border rounded" required></select>
+        <button type="submit" class="w-full bg-green-600 text-white py-2 rounded">Opslaan</button>
+      </form>
+    </div>
+  </div>
+
   <script>
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_DOMAIN",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_BUCKET",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const storage = firebase.storage();
+
     const btnVerfBeheer = document.getElementById('btnVerfBeheer');
     const btnToevoegen = document.getElementById('btnToevoegen');
     const btnOverzicht = document.getElementById('btnOverzicht');
@@ -60,6 +103,15 @@
     const verfBeheerSectie = document.getElementById('verfBeheerSectie');
     const toevoegenSectie = document.getElementById('toevoegenSectie');
     const overzichtSectie = document.getElementById('overzichtSectie');
+
+    const bewerkModal = document.getElementById('bewerkModal');
+    const sluitBewerkModal = document.getElementById('sluitBewerkModal');
+    const bewerkForm = document.getElementById('bewerkForm');
+
+    const bewerkId = document.getElementById('bewerkId');
+    const bewerkLocatie = document.getElementById('bewerkLocatie');
+    const bewerkOpmerkingen = document.getElementById('bewerkOpmerkingen');
+    const bewerkVerf = document.getElementById('bewerkVerf');
 
     const secties = {
       verfbeheer: { sectie: verfBeheerSectie, knop: btnVerfBeheer },
@@ -84,8 +136,76 @@
     btnOverzicht.addEventListener('click', () => toonSectie('overzicht'));
 
     document.addEventListener('DOMContentLoaded', () => {
-      const actieveTab = localStorage.getItem('actieveTab') || 'toevoegen';
-      toonSectie(actieveTab);
+      toonSectie(localStorage.getItem('actieveTab') || 'toevoegen');
+      laadVerfDropdown();
+      laadVerfmuren();
+    });
+
+    async function laadVerfDropdown() {
+      const dropdowns = [document.getElementById('verfDropdown'), document.getElementById('bewerkVerf')];
+      const snapshot = await db.collection('verven').get();
+      dropdowns.forEach(dropdown => {
+        dropdown.innerHTML = '<option value="">Selecteer een verf</option>';
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          const opt = document.createElement('option');
+          opt.value = doc.id;
+          opt.textContent = `${data.merk} - ${data.kleurcode}`;
+          dropdown.appendChild(opt.cloneNode(true));
+        });
+      });
+    }
+
+    async function laadVerfmuren() {
+      const lijst = document.getElementById('verfLijst');
+      lijst.innerHTML = 'Laden...';
+      const snapshot = await db.collection('muren').orderBy('locatie').get();
+      if (snapshot.empty) lijst.innerHTML = '<p class="text-gray-500">Nog geen muren toegevoegd</p>';
+      else lijst.innerHTML = '';
+      snapshot.forEach(doc => {
+        const muur = doc.data();
+        lijst.innerHTML += `
+          <div class='p-2 border rounded flex justify-between items-start'>
+            <div><strong>${muur.locatie}</strong><br>${muur.opmerkingen || ''}</div>
+            <div class="flex gap-2">
+              <button onclick="verwijderMuur('${doc.id}')" class="text-red-600 hover:underline">🗑️</button>
+              <button onclick="bewerkMuur('${doc.id}')" class="text-blue-600 hover:underline">✏️</button>
+            </div>
+          </div>`;
+      });
+    }
+
+    async function verwijderMuur(id) {
+      if (confirm("Weet je zeker dat je deze muur wilt verwijderen?")) {
+        await db.collection('muren').doc(id).delete();
+        laadVerfmuren();
+      }
+    }
+
+    function bewerkMuur(id) {
+      db.collection('muren').doc(id).get().then(doc => {
+        if (doc.exists) {
+          const muur = doc.data();
+          bewerkId.value = id;
+          bewerkLocatie.value = muur.locatie || '';
+          bewerkOpmerkingen.value = muur.opmerkingen || '';
+          bewerkVerf.value = muur.verfId || '';
+          bewerkModal.classList.remove('hidden');
+        }
+      });
+    }
+
+    sluitBewerkModal.addEventListener('click', () => bewerkModal.classList.add('hidden'));
+
+    bewerkForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      await db.collection('muren').doc(bewerkId.value).update({
+        locatie: bewerkLocatie.value,
+        opmerkingen: bewerkOpmerkingen.value,
+        verfId: bewerkVerf.value
+      });
+      bewerkModal.classList.add('hidden');
+      laadVerfmuren();
     });
   </script>
 </body>
