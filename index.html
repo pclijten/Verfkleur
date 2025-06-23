@@ -74,6 +74,12 @@
           </div>
 
           <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Opmerkingen</label>
+            <textarea name="opmerkingen" placeholder="Extra informatie over deze verf..." rows="2" 
+                      class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+          </div>
+
+          <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">📷 Foto van het kleurstaal (optioneel)</label>
             <input type="file" accept="image/*" capture="environment" id="verfStaalFoto" 
                    class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
@@ -142,24 +148,13 @@
                       class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
           </div>
 
-          <div class="grid md:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">📷 Foto van de muur *</label>
-              <input type="file" accept="image/*" capture="environment" id="muurfoto" required 
-                     class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
-              <div id="muurPreview" class="mt-2 hidden">
-                <img id="muurPreviewImg" class="w-full h-32 object-cover rounded-lg" />
-                <p id="muurSize" class="text-xs text-gray-500 mt-1"></p>
-              </div>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">📦 Foto van het verfblik *</label>
-              <input type="file" accept="image/*" capture="environment" id="verfblikfoto" required 
-                     class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
-              <div id="blikPreview" class="mt-2 hidden">
-                <img id="blikPreviewImg" class="w-full h-32 object-cover rounded-lg" />
-                <p id="blikSize" class="text-xs text-gray-500 mt-1"></p>
-              </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">📷 Foto van de muur *</label>
+            <input type="file" accept="image/*" capture="environment" id="muurfoto" required 
+                   class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+            <div id="muurPreview" class="mt-2 hidden">
+              <img id="muurPreviewImg" class="w-full h-32 object-cover rounded-lg" />
+              <p id="muurSize" class="text-xs text-gray-500 mt-1"></p>
             </div>
           </div>
 
@@ -272,6 +267,69 @@
     </div>
   </div>
 
+  <!-- Verf Bewerk Modal -->
+  <div id="verfBewerkModal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl p-6 max-w-2xl w-full max-h-full overflow-auto">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-xl font-bold">Verf Bewerken</h3>
+        <button id="sluitVerfBewerkModal" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+      </div>
+      
+      <form id="verfBewerkForm" class="space-y-4">
+        <input type="hidden" id="verfBewerkId" />
+        
+        <div class="grid md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Merk *</label>
+            <input type="text" id="verfBewerkMerk" required 
+                   class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Kleurcode *</label>
+            <input type="text" id="verfBewerkKleurcode" required 
+                   class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+          </div>
+        </div>
+        
+        <div class="grid md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Type *</label>
+            <select id="verfBewerkType" required class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              <option value="">Selecteer type</option>
+              <option value="Mat">Mat</option>
+              <option value="Zijdeglans">Zijdeglans</option>
+              <option value="Hoogglans">Hoogglans</option>
+              <option value="Satijn">Satijn</option>
+              <option value="Eggshell">Eggshell</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Kleurnaam</label>
+            <input type="text" id="verfBewerkKleurnaam" 
+                   class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+          </div>
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Opmerkingen</label>
+          <textarea id="verfBewerkOpmerkingen" rows="2" 
+                    class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+        </div>
+        
+        <div class="flex gap-4">
+          <button type="submit" class="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700">
+            Opslaan
+          </button>
+          <button type="button" id="annuleerVerfBewerken" class="flex-1 bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600">
+            Annuleren
+          </button>
+        </div>
+        
+        <div id="verfBewerkStatus" class="text-center text-sm"></div>
+      </form>
+    </div>
+  </div>
+
   <script>
     // Firebase configuratie
     const firebaseConfig = {
@@ -323,6 +381,10 @@
     const annuleerBewerken = document.getElementById('annuleerBewerken');
     const verfDropdown = document.getElementById('verfDropdown');
     const bewerkVerfkeuze = document.getElementById('bewerkVerfkeuze');
+    const verfBewerkModal = document.getElementById('verfBewerkModal');
+    const sluitVerfBewerkModal = document.getElementById('sluitVerfBewerkModal');
+    const verfBewerkForm = document.getElementById('verfBewerkForm');
+    const annuleerVerfBewerken = document.getElementById('annuleerVerfBewerken');
 
     // Navigatie functies
     function toonSectie(actieveSectie, actieveBtn) {
@@ -432,6 +494,14 @@
           img.addEventListener('click', (e) => {
             modalFoto.src = e.target.dataset.foto;
             fotoModal.classList.remove('hidden');
+          });
+        });
+
+        // Event listeners voor bewerken
+        document.querySelectorAll('.bewerk-verf-btn').forEach(btn => {
+          btn.addEventListener('click', async (e) => {
+            const id = e.target.dataset.id;
+            await openVerfBewerkModal(id);
           });
         });
 
@@ -576,15 +646,6 @@
       );
     });
 
-    document.getElementById('verfblikfoto').addEventListener('change', (e) => {
-      handleFileSelect(
-        e.target,
-        document.getElementById('blikPreview'),
-        document.getElementById('blikPreviewImg'),
-        document.getElementById('blikSize')
-      );
-    });
-
     document.getElementById('verfStaalFoto').addEventListener('change', (e) => {
       handleFileSelect(
         e.target,
@@ -645,6 +706,7 @@
           kleurcode: verfBeheerForm.kleurcode.value.trim(),
           type: verfBeheerForm.type.value,
           kleurnaam: verfBeheerForm.kleurnaam.value.trim() || '',
+          opmerkingen: verfBeheerForm.opmerkingen.value.trim() || '',
           toegevoegd: firebase.firestore.FieldValue.serverTimestamp()
         };
 
@@ -688,10 +750,9 @@
 
       try {
         const muurFile = document.getElementById('muurfoto').files[0];
-        const blikFile = document.getElementById('verfblikfoto').files[0];
 
-        if (!muurFile || !blikFile) {
-          throw new Error('Beide foto\'s zijn verplicht');
+        if (!muurFile) {
+          throw new Error('Muur foto is verplicht');
         }
 
         // Haal gekozen verf info op
@@ -706,14 +767,11 @@
         }
 
         console.log('Starting upload process...');
-        status.innerHTML = '<div class="text-blue-600">📷 Foto\'s uploaden...</div>';
+        status.innerHTML = '<div class="text-blue-600">📷 Foto uploaden...</div>';
         
-        const [muurFotoUrl, blikFotoUrl] = await Promise.all([
-          uploadFoto(muurFile, 'muur'),
-          uploadFoto(blikFile, 'blik')
-        ]);
+        const muurFotoUrl = await uploadFoto(muurFile, 'muur');
 
-        console.log('Photos uploaded, saving to Firestore...');
+        console.log('Photo uploaded, saving to Firestore...');
         status.innerHTML = '<div class="text-blue-600">💾 Gegevens opslaan...</div>';
 
         const verfData = verfDoc.data();
@@ -728,7 +786,6 @@
           liters: parseFloat(verfForm.liters.value) || null,
           opmerkingen: verfForm.opmerkingen.value.trim() || '',
           muurFoto: muurFotoUrl,
-          blikFoto: blikFotoUrl,
           toegevoegd: firebase.firestore.FieldValue.serverTimestamp()
         };
 
@@ -740,7 +797,6 @@
         
         // Reset previews
         document.getElementById('muurPreview').classList.add('hidden');
-        document.getElementById('blikPreview').classList.add('hidden');
         
         setTimeout(() => {
           status.innerHTML = '';
@@ -861,12 +917,8 @@
                 ` : ''}
               </div>
               
-              <div class="flex items-center justify-between pt-4 border-t">
-                <button class="text-sm text-blue-600 hover:text-blue-800 font-medium foto-thumbnail" 
-                        data-foto="${muur.blikFoto}">
-                  📦 Bekijk verfblik
-                </button>
-                <span class="text-xs text-gray-500">${datum}</span>
+              <div class="pt-4 border-t">
+                <span class="text-xs text-gray-500">Toegevoegd: ${datum}</span>
               </div>
             </div>
           `;
@@ -903,16 +955,10 @@
                 if (doc.exists) {
                   const data = doc.data();
                   
-                  // Verwijder de foto's uit storage
-                  const deletePromises = [];
+                  // Verwijder de foto uit storage
                   if (data.muurFoto) {
-                    deletePromises.push(storage.refFromURL(data.muurFoto).delete());
+                    await storage.refFromURL(data.muurFoto).delete();
                   }
-                  if (data.blikFoto) {
-                    deletePromises.push(storage.refFromURL(data.blikFoto).delete());
-                  }
-                  
-                  await Promise.all(deletePromises);
                 }
                 
                 // Verwijder het document
@@ -932,6 +978,86 @@
         verfLijst.innerHTML = '<div class="col-span-full text-center text-red-600">Fout bij laden van gegevens</div>';
       }
     }
+
+    // Open verf bewerk modal
+    async function openVerfBewerkModal(id) {
+      try {
+        const doc = await db.collection('verven').doc(id).get();
+        if (!doc.exists) {
+          alert('Verf niet gevonden');
+          return;
+        }
+
+        const data = doc.data();
+        
+        // Vul formulier
+        document.getElementById('verfBewerkId').value = id;
+        document.getElementById('verfBewerkMerk').value = data.merk;
+        document.getElementById('verfBewerkKleurcode').value = data.kleurcode;
+        document.getElementById('verfBewerkType').value = data.type;
+        document.getElementById('verfBewerkKleurnaam').value = data.kleurnaam || '';
+        document.getElementById('verfBewerkOpmerkingen').value = data.opmerkingen || '';
+        
+        // Toon modal
+        verfBewerkModal.classList.remove('hidden');
+        
+      } catch (error) {
+        console.error('Error opening verf edit modal:', error);
+        alert('Fout bij laden van verfgegevens');
+      }
+    }
+
+    // Verf bewerk form submit
+    verfBewerkForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const verfBewerkStatus = document.getElementById('verfBewerkStatus');
+      verfBewerkStatus.innerHTML = '<div class="text-blue-600">Bezig met opslaan...</div>';
+      
+      try {
+        const id = document.getElementById('verfBewerkId').value;
+        
+        const updateData = {
+          merk: document.getElementById('verfBewerkMerk').value.trim(),
+          kleurcode: document.getElementById('verfBewerkKleurcode').value.trim(),
+          type: document.getElementById('verfBewerkType').value,
+          kleurnaam: document.getElementById('verfBewerkKleurnaam').value.trim() || '',
+          opmerkingen: document.getElementById('verfBewerkOpmerkingen').value.trim() || '',
+          bijgewerkt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        await db.collection('verven').doc(id).update(updateData);
+        
+        // Update ook alle muren die deze verf gebruiken
+        const murenSnapshot = await db.collection('muren').where('verfId', '==', id).get();
+        const updatePromises = [];
+        
+        murenSnapshot.forEach(doc => {
+          updatePromises.push(
+            db.collection('muren').doc(doc.id).update({
+              merk: updateData.merk,
+              kleurcode: updateData.kleurcode,
+              type: updateData.type,
+              kleurnaam: updateData.kleurnaam
+            })
+          );
+        });
+        
+        await Promise.all(updatePromises);
+        
+        verfBewerkStatus.innerHTML = '<div class="text-green-600">✅ Succesvol bijgewerkt!</div>';
+        
+        setTimeout(() => {
+          verfBewerkModal.classList.add('hidden');
+          laadVerven();
+          laadVerfDropdown();
+        }, 1500);
+
+      } catch (error) {
+        console.error('Error updating verf:', error);
+        verfBewerkStatus.innerHTML = `<div class="text-red-600">❌ Fout: ${error.message}</div>`;
+      }
+    });
 
     // Open bewerk modal
     async function openBewerkModal(id) {
