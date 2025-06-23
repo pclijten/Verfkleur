@@ -434,29 +434,22 @@
         bewerkVerfkeuze.innerHTML = '<option value="">Selecteer een verf</option>';
         
         snapshot.forEach(doc => {
-      for (const doc of snapshot.docs) {
+     for (const doc of snapshot.docs) {
   const data = doc.data();
-  const matchesZoek = !zoekterm || 
+  const matchesZoek = !zoekterm ||
     data.locatie.toLowerCase().includes(zoekterm.toLowerCase()) ||
     data.kleurcode.toLowerCase().includes(zoekterm.toLowerCase()) ||
     data.kleurnaam.toLowerCase().includes(zoekterm.toLowerCase()) ||
     data.merk.toLowerCase().includes(zoekterm.toLowerCase());
-
   const matchesType = !typeFilter || data.type === typeFilter;
 
   if (matchesZoek && matchesType) {
+    // haal staalFoto op
     let staalFoto = '';
     if (data.verfId) {
-      try {
-        const verfDoc = await db.collection('verven').doc(data.verfId).get();
-        if (verfDoc.exists && verfDoc.data().staalFoto) {
-          staalFoto = verfDoc.data().staalFoto;
-        }
-      } catch (error) {
-        console.error("Fout bij ophalen staalFoto:", error);
-      }
+      const verfDoc = await db.collection('verven').doc(data.verfId).get();
+      staalFoto = verfDoc.exists ? (verfDoc.data().staalFoto || '') : '';
     }
-
     verfmuren.push({ id: doc.id, ...data, staalFoto });
   }
 }
