@@ -434,23 +434,33 @@
         bewerkVerfkeuze.innerHTML = '<option value="">Selecteer een verf</option>';
         
         snapshot.forEach(doc => {
-          const verf = doc.data();
-          const optionText = `${verf.merk} - ${verf.kleurcode} (${verf.type})${verf.kleurnaam ? ' - ' + verf.kleurnaam : ''}`;
-          
-          const option1 = document.createElement('option');
-          option1.value = doc.id;
-          option1.textContent = optionText;
-          verfDropdown.appendChild(option1);
-          
-          const option2 = document.createElement('option');
-          option2.value = doc.id;
-          option2.textContent = optionText;
-          bewerkVerfkeuze.appendChild(option2);
-        });
+      for (const doc of snapshot.docs) {
+  const data = doc.data();
+  const matchesZoek = !zoekterm || 
+    data.locatie.toLowerCase().includes(zoekterm.toLowerCase()) ||
+    data.kleurcode.toLowerCase().includes(zoekterm.toLowerCase()) ||
+    data.kleurnaam.toLowerCase().includes(zoekterm.toLowerCase()) ||
+    data.merk.toLowerCase().includes(zoekterm.toLowerCase());
+
+  const matchesType = !typeFilter || data.type === typeFilter;
+
+  if (matchesZoek && matchesType) {
+    let staalFoto = '';
+    if (data.verfId) {
+      try {
+        const verfDoc = await db.collection('verven').doc(data.verfId).get();
+        if (verfDoc.exists && verfDoc.data().staalFoto) {
+          staalFoto = verfDoc.data().staalFoto;
+        }
       } catch (error) {
-        console.error('Error loading verven:', error);
+        console.error("Fout bij ophalen staalFoto:", error);
       }
     }
+
+    verfmuren.push({ id: doc.id, ...data, staalFoto });
+  }
+}
+
 
     // Laad verven voor beheer
     async function laadVerven() {
