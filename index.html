@@ -547,21 +547,20 @@
 
         // Event listeners voor delen
         document.querySelectorAll('.delen-btn').forEach(btn => {
-          btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            e.preventDefault();
-            const kaart = e.target.closest('[data-muur-data]');
-            if (kaart && kaart.dataset.muurData) {
-              try {
-                const muurData = JSON.parse(kaart.dataset.muurData);
-                console.log('Delen muur:', muurData);
-                deelViaWhatsApp(muurData);
-              } catch (error) {
-                console.error('Error parsing muur data:', error);
-              }
-            }
-          });
-        });
+        btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+    // pak de data van de hele kaart
+    const kaart = e.target.closest('[data-muur-data]');
+    if (!kaart) return;
+
+    try {
+      const muurData = JSON.parse(kaart.dataset.muurData);
+      deelViaWhatsApp(muurData);
+    } catch (error) {
+      console.error('Error parsing muurData voor delen:', error);
+    }
+  });
+});
 
         // Event listeners voor bewerken
         document.querySelectorAll('.bewerk-verf-btn').forEach(btn => {
