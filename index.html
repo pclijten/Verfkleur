@@ -589,6 +589,10 @@
         throw error;
       }
     }
+// Bij laden standaard "Toevoegen" sectie tonen
+document.addEventListener("DOMContentLoaded", () => {
+  toonSectie(toevoegenSectie, btnToevoegen);
+});
 
     // Form submit
     verfForm.addEventListener('submit', async (e) => {
