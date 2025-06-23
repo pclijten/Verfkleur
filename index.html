@@ -499,18 +499,18 @@
         });
 
         // Event listeners voor delen
-        document.querySelectorAll('.delen-btn').forEach(btn => {
-          btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            e.preventDefault();
-            const button = e.target.closest('.delen-btn');
-            const id = button.dataset.id;
-            const muur = verfmuren.find(m => m.id === id);
-            if (muur) {
-              deelViaWhatsApp(muur);
-            }
-          });
-        });
+document.querySelectorAll('.delen-btn').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    const button = e.target.closest('.delen-btn');
+    const id = button.dataset.id;
+    const muur = verfmuren.find(m => m.id === id);
+    if (muur) {
+      deelViaWhatsApp(muur);
+    }
+  });
+});
 
 // Event listeners voor bewerken
   document.querySelectorAll(".bewerk-verf-btn").forEach((btn) => {
