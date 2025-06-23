@@ -1017,33 +1017,34 @@ document.querySelectorAll('.delen-btn').forEach(btn => {
     }
 
     // Deel via WhatsApp functie
-    function deelViaWhatsApp(muur) {
-      try {
-        // Maak een tekst bericht met alle details
-        let bericht = `🎨 VerfMuur Details\n\n`;
-        bericht += `📍 Locatie: ${muur.locatie}\n`;
-        bericht += `🎨 Verf: ${muur.merk} - ${muur.kleurcode}\n`;
-        
-        if (muur.kleurnaam) {
-          bericht += `🏷️ Kleurnaam: ${muur.kleurnaam}\n`;
-        }
-        
-        bericht += `✨ Type: ${muur.type}\n`;
-        
-        if (muur.liters) {
-          bericht += `📏 Hoeveelheid: ${muur.liters} liter\n`;
-        }
-        
-        if (muur.gekocht) {
-          const datum = new Date(muur.gekocht).toLocaleDateString('nl-NL');
-          bericht += `📅 Gekocht op: ${datum}\n`;
-        }
-        
-        if (muur.opmerkingen) {
-          bericht += `📝 Opmerkingen: ${muur.opmerkingen}\n`;
-        }
-        
-        bericht += `\n🔗 Foto: ${muur.muurFoto}`;
+   function deelViaWhatsApp(muur) {
+  let message = `🎨 *VerfMuur Details*\n\n`;
+  message += `📍 *Locatie:* ${muur.locatie}\n`;
+  if (muur.verfMerk && muur.verfKleurcode) {
+    message += `🎨 *Verf:* ${muur.verfMerk} - ${muur.verfKleurcode}\n`;
+  }
+  if (muur.verfKleurnaam) {
+    message += `🏷️ *Kleurnaam:* ${muur.verfKleurnaam}\n`;
+  }
+  if (muur.verfType) {
+    message += `✨ *Type:* ${muur.verfType}\n`;
+  }
+  if (muur.hoeveelheid) {
+    message += `📏 *Hoeveelheid:* ${muur.hoeveelheid} liter\n`;
+  }
+  if (muur.aankoopdatum) {
+    message += `📅 *Gekocht op:* ${muur.aankoopdatum}\n`;
+  }
+  if (muur.opmerkingen) {
+    message += `📝 *Opmerkingen:* ${muur.opmerkingen}\n`;
+  }
+  if (muur.afbeeldingUrl) {
+    message += `\n🔗 *Foto:* ${muur.afbeeldingUrl}`;
+  }
+
+  const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+  window.open(whatsappUrl, "_blank");
+}
         
         // Encode het bericht voor URL
         const encodedBericht = encodeURIComponent(bericht);
