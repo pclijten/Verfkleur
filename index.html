@@ -1185,6 +1185,7 @@
 
     // Open bewerk modal
     async function openBewerkModal(id) {
+      await laadVerfDropdown();
       try {
         const doc = await db.collection('muren').doc(id).get();
         if (!doc.exists) {
