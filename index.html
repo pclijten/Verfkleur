@@ -435,7 +435,7 @@
         
         snapshot.forEach(doc => {
           const verf = doc.data();
-          const optionText = ${verf.merk} - ${verf.kleurcode} (${verf.type})${verf.kleurnaam ? ' - ' + verf.kleurnaam : ''};
+          const optionText = `${verf.merk} - ${verf.kleurcode} (${verf.type})${verf.kleurnaam ? ' - ' + verf.kleurnaam : ''}`;
           
           const option1 = document.createElement('option');
           option1.value = doc.id;
@@ -469,39 +469,30 @@
           const verf = doc.data();
           const div = document.createElement('div');
           div.className = 'bg-gray-50 rounded-lg p-4 hover:shadow-md transition-shadow';
-          div.innerHTML = 
-           <div class="flex justify-between items-start mb-2">
-  <div class="flex-1">
-    <h4 class="font-bold text-lg">${verf.merk} - ${verf.kleurcode}</h4>
-    <p class="text-sm text-gray-600">${verf.type}</p>
-    ${verf.kleurnaam ? `<p class="text-sm text-gray-600">${verf.kleurnaam}</p>` : ''}
-    ${verf.opmerkingen ? `<p class="text-sm text-gray-500 italic mt-1">"${verf.opmerkingen}"</p>` : ''}
-  </div>
-  <div class="flex flex-col items-end gap-1">
-    <button class="text-blue-500 hover:text-blue-700 text-xl bewerk-verf-btn" data-id="${doc.id}">
-      ✏️
-    </button>
-    <button class="text-red-500 hover:text-red-700 text-xl verwijder-verf-btn" data-id="${doc.id}">
-      🗑️
-    </button>
-  </div>
-</div>
-
-            ${verf.staalFoto ? 
+          div.innerHTML = `
+            <div class="flex justify-between items-start mb-2">
+              <div class="flex-1">
+                <h4 class="font-bold text-lg">${verf.merk} - ${verf.kleurcode}</h4>
+                <p class="text-sm text-gray-600">${verf.type}</p>
+                ${verf.kleurnaam ? `<p class="text-sm text-gray-600">${verf.kleurnaam}</p>` : ''}
+              </div>
+              <button class="text-red-500 hover:text-red-700 text-xl verwijder-verf-btn" data-id="${doc.id}">
+                🗑️
+              </button>
+            </div>
+            ${verf.staalFoto ? `
               <img src="${verf.staalFoto}" alt="Kleurstaal" 
                    class="w-full h-24 object-cover rounded cursor-pointer hover:opacity-80 foto-thumbnail"
                    data-foto="${verf.staalFoto}" />
-             : ''}
-          ;
+            ` : ''}
+          `;
           verfLijstBeheer.appendChild(div);
         });
 
         // Event listeners voor foto's
         document.querySelectorAll('.foto-thumbnail').forEach(img => {
           img.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const foto = e.target.closest('.foto-thumbnail').dataset.foto;
-            modalFoto.src = foto;
+            modalFoto.src = e.target.dataset.foto;
             fotoModal.classList.remove('hidden');
           });
         });
@@ -510,9 +501,7 @@
         document.querySelectorAll('.delen-btn').forEach(btn => {
           btn.addEventListener('click', (e) => {
             e.stopPropagation();
-            e.preventDefault();
-            const button = e.target.closest('.delen-btn');
-            const id = button.dataset.id;
+            const id = e.target.closest('.delen-btn').dataset.id;
             const muur = verfmuren.find(m => m.id === id);
             if (muur) {
               deelViaWhatsApp(muur);
@@ -524,9 +513,7 @@
         document.querySelectorAll('.bewerk-verf-btn').forEach(btn => {
           btn.addEventListener('click', (e) => {
             e.stopPropagation();
-            e.preventDefault();
-            const button = e.target.closest('.bewerk-verf-btn');
-            const id = button.dataset.id;
+            const id = e.target.closest('.bewerk-verf-btn').dataset.id;
             openVerfBewerkModal(id);
           });
         });
@@ -534,11 +521,8 @@
         // Event listeners voor verwijderen
         document.querySelectorAll('.verwijder-verf-btn').forEach(btn => {
           btn.addEventListener('click', async (e) => {
-            e.stopPropagation();
-            e.preventDefault();
-            const button = e.target.closest('.verwijder-verf-btn');
-            const id = button.dataset.id;
             if (confirm('Weet je zeker dat je deze verf wilt verwijderen?')) {
+              const id = e.target.dataset.id;
               try {
                 // Verwijder ook de foto als die bestaat
                 const doc = await db.collection('verven').doc(id).get();
@@ -601,7 +585,7 @@
           const tryCompress = () => {
             canvas.toBlob((blob) => {
               const sizeMB = blob.size / (1024 * 1024);
-              console.log(Compressed to ${sizeMB.toFixed(2)}MB at quality ${currentQuality});
+              console.log(`Compressed to ${sizeMB.toFixed(2)}MB at quality ${currentQuality}`);
               
               if (sizeMB > maxSizeMB && currentQuality > 0.1) {
                 currentQuality -= 0.1;
@@ -629,7 +613,7 @@
       const file = inputElement.files[0];
       if (!file) return;
 
-      console.log(Original file size: ${(file.size / (1024 * 1024)).toFixed(2)}MB);
+      console.log(`Original file size: ${(file.size / (1024 * 1024)).toFixed(2)}MB`);
       
       // Toon loading
       sizeElement.textContent = 'Comprimeren...';
@@ -652,7 +636,7 @@
         reader.onload = (e) => {
           previewImg.src = e.target.result;
           const sizeMB = (processedFile.size / (1024 * 1024)).toFixed(2);
-          sizeElement.textContent = ${sizeMB}MB;
+          sizeElement.textContent = `${sizeMB}MB`;
           sizeElement.className = processedFile.size > 5 * 1024 * 1024 ? 
             'text-xs text-red-500 mt-1' : 'text-xs text-green-600 mt-1';
         };
@@ -687,10 +671,10 @@
     // Upload foto naar Firebase Storage
     async function uploadFoto(file, naam) {
       try {
-        console.log(Uploading ${naam}:, file.name, file.size);
+        console.log(`Uploading ${naam}:`, file.name, file.size);
         const timestamp = Date.now();
         const safeName = file.name.replace(/[^a-zA-Z0-9.]/g, '_');
-        const storageRef = storage.ref(fotos/${timestamp}_${naam}_${safeName});
+        const storageRef = storage.ref(`fotos/${timestamp}_${naam}_${safeName}`);
         
         // Upload met progress monitoring
         const uploadTask = storageRef.put(file);
@@ -699,26 +683,26 @@
           uploadTask.on('state_changed', 
             (snapshot) => {
               const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-              console.log(Upload ${naam} is ${progress.toFixed(0)}% done);
+              console.log(`Upload ${naam} is ${progress.toFixed(0)}% done`);
             }, 
             (error) => {
-              console.error(Upload error for ${naam}:, error);
+              console.error(`Upload error for ${naam}:`, error);
               reject(error);
             }, 
             async () => {
               try {
                 const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
-                console.log(Upload complete for ${naam}:, downloadURL);
+                console.log(`Upload complete for ${naam}:`, downloadURL);
                 resolve(downloadURL);
               } catch (error) {
-                console.error(Error getting download URL for ${naam}:, error);
+                console.error(`Error getting download URL for ${naam}:`, error);
                 reject(error);
               }
             }
           );
         });
       } catch (error) {
-        console.error(Error in uploadFoto for ${naam}:, error);
+        console.error(`Error in uploadFoto for ${naam}:`, error);
         throw error;
       }
     }
@@ -844,7 +828,7 @@
           errorMessage = 'Opslaglimiet bereikt. Verwijder oude foto\'s.';
         }
         
-        status.innerHTML = <div class="text-red-600">❌ Fout: ${errorMessage}</div>;
+        status.innerHTML = `<div class="text-red-600">❌ Fout: ${errorMessage}</div>`;
       } finally {
         submitBtn.disabled = false;
         submitText.textContent = 'Opslaan';
@@ -892,7 +876,7 @@
             new Date(muur.toegevoegd.seconds * 1000).toLocaleDateString('nl-NL') : 
             'Onbekend';
 
-          kaart.innerHTML = 
+          kaart.innerHTML = `
             <div class="relative">
               <img src="${muur.muurFoto}" alt="Muur foto" 
                    class="w-full h-48 object-cover rounded-t-xl cursor-pointer hover:opacity-90 transition-opacity foto-thumbnail"
@@ -900,15 +884,15 @@
               <div class="absolute top-2 right-2 flex gap-2">
                 <button class="bg-white bg-opacity-90 rounded-full p-2 hover:bg-opacity-100 transition-all delen-btn" 
                         data-id="${muur.id}" title="Delen via WhatsApp">
-                  <span class="pointer-events-none">📱</span>
+                  📱
                 </button>
                 <button class="bg-white bg-opacity-90 rounded-full p-2 hover:bg-opacity-100 transition-all bewerk-btn" 
                         data-id="${muur.id}" title="Bewerken">
-                  <span class="pointer-events-none">✏️</span>
+                  ✏️
                 </button>
                 <button class="bg-white bg-opacity-90 rounded-full p-2 hover:bg-opacity-100 transition-all verwijder-btn" 
                         data-id="${muur.id}" title="Verwijderen">
-                  <span class="pointer-events-none">🗑️</span>
+                  🗑️
                 </button>
               </div>
             </div>
@@ -921,40 +905,40 @@
                   <span class="text-sm font-medium text-gray-600">Verf:</span>
                   <span class="text-sm">${muur.merk} - ${muur.kleurcode}</span>
                 </div>
-                ${muur.kleurnaam ? 
+                ${muur.kleurnaam ? `
                   <div class="flex items-center gap-2">
                     <span class="text-sm font-medium text-gray-600">Kleur:</span>
                     <span class="text-sm">${muur.kleurnaam}</span>
                   </div>
-                 : ''}
+                ` : ''}
                 <div class="flex items-center gap-2">
                   <span class="text-sm font-medium text-gray-600">Type:</span>
                   <span class="text-sm bg-gray-100 px-2 py-1 rounded">${muur.type}</span>
                 </div>
-                ${muur.liters ? 
+                ${muur.liters ? `
                   <div class="flex items-center gap-2">
                     <span class="text-sm font-medium text-gray-600">Hoeveelheid:</span>
                     <span class="text-sm">${muur.liters} liter</span>
                   </div>
-                 : ''}
-                ${muur.gekocht ? 
+                ` : ''}
+                ${muur.gekocht ? `
                   <div class="flex items-center gap-2">
                     <span class="text-sm font-medium text-gray-600">Gekocht:</span>
                     <span class="text-sm">${new Date(muur.gekocht).toLocaleDateString('nl-NL')}</span>
                   </div>
-                 : ''}
-                ${muur.opmerkingen ? 
+                ` : ''}
+                ${muur.opmerkingen ? `
                   <div class="mt-2">
                     <p class="text-sm text-gray-600 italic">"${muur.opmerkingen}"</p>
                   </div>
-                 : ''}
+                ` : ''}
               </div>
               
               <div class="pt-4 border-t">
                 <span class="text-xs text-gray-500">Toegevoegd: ${datum}</span>
               </div>
             </div>
-          ;
+          `;
           
           verfLijst.appendChild(kaart);
         });
@@ -962,9 +946,7 @@
         // Event listeners voor foto's
         document.querySelectorAll('.foto-thumbnail').forEach(img => {
           img.addEventListener('click', (e) => {
-            const target = e.target.closest('.foto-thumbnail');
-            const foto = target.dataset.foto;
-            modalFoto.src = foto;
+            modalFoto.src = e.target.dataset.foto;
             fotoModal.classList.remove('hidden');
           });
         });
@@ -973,9 +955,7 @@
         document.querySelectorAll('.bewerk-btn').forEach(btn => {
           btn.addEventListener('click', (e) => {
             e.stopPropagation();
-            e.preventDefault();
-            const button = e.target.closest('.bewerk-btn');
-            const id = button.dataset.id;
+            const id = e.target.closest('.bewerk-btn').dataset.id;
             openBewerkModal(id);
           });
         });
@@ -984,9 +964,7 @@
         document.querySelectorAll('.verwijder-btn').forEach(btn => {
           btn.addEventListener('click', async (e) => {
             e.stopPropagation();
-            e.preventDefault();
-            const button = e.target.closest('.verwijder-btn');
-            const id = button.dataset.id;
+            const id = e.target.closest('.verwijder-btn').dataset.id;
             if (confirm('Weet je zeker dat je deze verfmuur wilt verwijderen?')) {
               try {
                 // Haal eerst de data op om de foto URLs te krijgen
@@ -1022,30 +1000,30 @@
     function deelViaWhatsApp(muur) {
       try {
         // Maak een tekst bericht met alle details
-        let bericht = 🎨 VerfMuur Details\n\n;
-        bericht += 📍 Locatie: ${muur.locatie}\n;
-        bericht += 🎨 Verf: ${muur.merk} - ${muur.kleurcode}\n;
+        let bericht = `🎨 VerfMuur Details\n\n`;
+        bericht += `📍 Locatie: ${muur.locatie}\n`;
+        bericht += `🎨 Verf: ${muur.merk} - ${muur.kleurcode}\n`;
         
         if (muur.kleurnaam) {
-          bericht += 🏷️ Kleurnaam: ${muur.kleurnaam}\n;
+          bericht += `🏷️ Kleurnaam: ${muur.kleurnaam}\n`;
         }
         
-        bericht += ✨ Type: ${muur.type}\n;
+        bericht += `✨ Type: ${muur.type}\n`;
         
         if (muur.liters) {
-          bericht += 📏 Hoeveelheid: ${muur.liters} liter\n;
+          bericht += `📏 Hoeveelheid: ${muur.liters} liter\n`;
         }
         
         if (muur.gekocht) {
           const datum = new Date(muur.gekocht).toLocaleDateString('nl-NL');
-          bericht += 📅 Gekocht op: ${datum}\n;
+          bericht += `📅 Gekocht op: ${datum}\n`;
         }
         
         if (muur.opmerkingen) {
-          bericht += 📝 Opmerkingen: ${muur.opmerkingen}\n;
+          bericht += `📝 Opmerkingen: ${muur.opmerkingen}\n`;
         }
         
-        bericht += \n🔗 Foto: ${muur.muurFoto};
+        bericht += `\n🔗 Foto: ${muur.muurFoto}`;
         
         // Encode het bericht voor URL
         const encodedBericht = encodeURIComponent(bericht);
@@ -1056,10 +1034,10 @@
         let whatsappUrl;
         if (isMobile) {
           // Mobiel: gebruik de api.whatsapp.com URL die werkt voor beide
-          whatsappUrl = https://api.whatsapp.com/send?text=${encodedBericht};
+          whatsappUrl = `https://api.whatsapp.com/send?text=${encodedBericht}`;
         } else {
           // Desktop: gebruik web.whatsapp.com
-          whatsappUrl = https://web.whatsapp.com/send?text=${encodedBericht};
+          whatsappUrl = `https://web.whatsapp.com/send?text=${encodedBericht}`;
         }
         
         // Open in nieuw venster/tab
@@ -1152,7 +1130,7 @@
 
       } catch (error) {
         console.error('Error updating verf:', error);
-        verfBewerkStatus.innerHTML = <div class="text-red-600">❌ Fout: ${error.message}</div>;
+        verfBewerkStatus.innerHTML = `<div class="text-red-600">❌ Fout: ${error.message}</div>`;
       }
     });
 
@@ -1230,7 +1208,7 @@
 
       } catch (error) {
         console.error('Error updating muur:', error);
-        bewerkStatus.innerHTML = <div class="text-red-600">❌ Fout: ${error.message}</div>;
+        bewerkStatus.innerHTML = `<div class="text-red-600">❌ Fout: ${error.message}</div>`;
       }
     });
 
@@ -1259,18 +1237,6 @@
 
     annuleerVerfBewerken.addEventListener('click', () => {
       verfBewerkModal.classList.add('hidden');
-    });
-
-    verfBewerkModal.addEventListener('click', (e) => {
-      if (e.target === verfBewerkModal) {
-        verfBewerkModal.classList.add('hidden');
-      }
-    });
-
-    bewerkModal.addEventListener('click', (e) => {
-      if (e.target === bewerkModal) {
-        bewerkModal.classList.add('hidden');
-      }
     });
 
     // Zoek en filter functionaliteit
